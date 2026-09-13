@@ -125,7 +125,7 @@
   .foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);
     font-size:12px;color:var(--muted-2);line-height:1.55;max-width:82ch}
   .foot b{color:var(--muted);font-weight:600}
-  .science{margin-top:20px}
+  .science,.misuse,.sources{margin-top:20px}
   .sci-toggle{cursor:pointer;background:none;border:none;width:100%;font:inherit;text-align:left;
     padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
   .sci-toggle h2{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
@@ -142,17 +142,10 @@
   .sci-block p{font-size:13.5px;color:var(--slate);line-height:1.5}
   .sci-block p b{color:var(--ink);font-weight:600}
   .sci-full{grid-column:1/-1;border-left:3px solid var(--avoid);padding-left:17px}
-  .sci-full .eyb{color:var(--avoid)}
   .sci-full p{margin-bottom:10px}
   .sci-full p:last-child{margin-bottom:0}
-  .refs{padding:4px 22px 22px;border-top:1px solid var(--line-soft);margin-top:2px}
-  .refs-toggle{cursor:pointer;background:none;border:none;width:100%;font:inherit;text-align:left;
-    margin:16px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line);
-    display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .refs-toggle:focus-visible{outline:2px solid var(--slate);outline-offset:-2px}
-  .refs-toggle h3{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
-  .refs ul{list-style:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);line-height:1.55}
-  @media(min-width:760px){.refs ul{columns:2;column-gap:34px}}
+  .refs{padding:20px 22px;margin:0;list-style:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);line-height:1.55}
+  @media(min-width:760px){.refs{columns:2;column-gap:34px}}
   .refs li{margin-bottom:9px;break-inside:avoid}
   .refs i{font-style:italic}
   @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -235,13 +228,6 @@
         <h3>Why the rights tools sit apart</h3>
         <p><b>RACI, RAPID, DARE and DACI</b> are practitioner tools, not decision rules. RAPID was developed by <b>Bain &amp; Company</b>; DACI at <b>Intuit</b>; the case for naming a single decision owner was made in Rogers and Blenko's <b>"Who Has the D?" (2006)</b>. They allocate roles around a decision that already assumes one accountable decider — which is why the tool marks them <b>Avoid</b> the moment the recommendation crosses into consent, democratic or consensus territory.</p>
       </div>
-      <div class="sci-block sci-full">
-        <div class="eyb">Capture &amp; misuse</div>
-        <h3>When rights tools are turned into weapons</h3>
-        <p>Because these tools concentrate the final say in one named role, they can be <b>captured</b> — used to formalise a power imbalance rather than to check it. The clearest abuse is naming a Decider who is also a <b>stakeholder in the decision</b>: someone on the very team the decision affects. With no counter-veto and advice that is <b>non-binding by design</b>, consultation becomes cosmetic and the tool lends a pre-existing asymmetry the appearance of due process. In governance terms this collapses the <b>separation of decision management from decision control</b> (Fama &amp; Jensen, 1983): whoever frames and makes a call should not also be the one who ratifies it when they hold a stake in the outcome.</p>
-        <p>The impact shows up in behaviour, not just fairness. Greer, Jordan and Sytch (2026) document that rights dictated top-down — the "boss's spreadsheet" — produce <b>no buy-in</b>, so people quietly decline to play their roles; that deciders who act on <b>rank rather than the best-informed view</b> degrade decision quality (in their case a senior partner overrode the due-diligence data on instinct and passed on a future unicorn); and that concentrating the call in one contested meeting breeds <b>power struggles and disengagement</b>. The pattern compounds: self- and group-serving bias in the decider, suppressed <b>voice</b> (Edmondson, 1999), and lost local knowledge (Hayek, 1945).</p>
-        <p>The correction is <b>structural, not moral</b>. Co-create the rights rather than dictate them; give the call to whoever is closest to the work and <b>least conflicted</b>; and for high-stakes or complex decisions move to <b>consent</b> — a distributed, reasoned veto a single stakeholder cannot capture — or the <b>advice process</b>, where the decider must seek and publish advice. Those are the two methods this tool recommends exactly where the rights tools turn "Avoid."</p>
-      </div>
       <div class="sci-block">
         <div class="eyb">Honesty about the model</div>
         <h3>What this instrument is — and isn't</h3>
@@ -253,30 +239,48 @@
         <p>No method wins everywhere. Good decision-making is <b>fit-for-purpose</b>: it matches the character of the decision — its urgency, reversibility, complexity, where the knowledge sits, and how much buy-in it needs — to the right distribution of decision rights, and only then to the right role-allocation tool.</p>
       </div>
     </div>
-    <div class="refs">
-      <button type="button" class="refs-toggle" id="refsToggle" aria-expanded="false" aria-controls="refsContent">
-        <h3>Sources</h3>
-        <svg class="chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <ul id="refsContent" hidden>
-        <li>Arrow, K. J. (1951). <i>Social choice and individual values</i>. Wiley.</li>
-        <li>Bakke, D. W. (2013). <i>The decision maker: Unlock the potential of everyone in your organization, one decision at a time</i>. Pear Press.</li>
-        <li>Edmondson, A. C. (1999). Psychological safety and learning behavior in work teams. <i>Administrative Science Quarterly, 44</i>(2), 350–383.</li>
-        <li>Fama, E. F., &amp; Jensen, M. C. (1983). Separation of ownership and control. <i>Journal of Law and Economics, 26</i>(2), 301–325.</li>
-        <li>Greer, L., Jordan, J., &amp; Sytch, M. (2026, July–August). What companies get wrong about decision rights. <i>Harvard Business Review</i>.</li>
-        <li>Harmel-Law, A., &amp; Wells, M. (2025). <i>Facilitating software architecture</i>. O'Reilly.</li>
-        <li>Hayek, F. A. (1945). The use of knowledge in society. <i>American Economic Review, 35</i>(4), 519–530.</li>
-        <li>Keeney, R. L., &amp; Raiffa, H. (1976). <i>Decisions with multiple objectives</i>. Wiley.</li>
-        <li>Rau, T. J., &amp; Koch-Gonzalez, J. (2018). <i>Many voices one song</i>. Sociocracy For All.</li>
-        <li>Rogers, P., &amp; Blenko, M. (2006). Who has the D? <i>Harvard Business Review, 84</i>(1).</li>
-        <li>Simon, H. A. (1947). <i>Administrative behavior</i>. Macmillan.</li>
-        <li>Snowden, D. J., &amp; Boone, M. E. (2007). A leader's framework for decision making. <i>Harvard Business Review, 85</i>(11).</li>
-        <li>Stacey, R. D. (1996). <i>Complexity and creativity in organizations</i>. Berrett-Koehler.</li>
-        <li>Vroom, V. H., &amp; Yetton, P. W. (1973). <i>Leadership and decision-making</i>. Univ. of Pittsburgh Press.</li>
-        <li>Vroom, V. H., &amp; Jago, A. G. (1988). <i>The new leadership</i>. Prentice Hall.</li>
-      </ul>
+    </div>
+  </section>
+
+  <section class="card misuse">
+    <button type="button" class="sci-toggle" id="misuseToggle" aria-expanded="false" aria-controls="misuseContent">
+      <h2>Misuse</h2>
+      <span class="hint"><svg class="chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>
+    <div id="misuseContent" hidden>
+    <div class="sci-grid">
+      <div class="sci-block sci-full">
+        <h3>When rights tools are turned into weapons</h3>
+        <p>Because these tools concentrate the final say in one named role, they can be <b>captured</b> — used to formalise a power imbalance rather than to check it. The clearest abuse is naming a Decider who is also a <b>stakeholder in the decision</b>: someone on the very team the decision affects. With no counter-veto and advice that is <b>non-binding by design</b>, consultation becomes cosmetic and the tool lends a pre-existing asymmetry the appearance of due process. In governance terms this collapses the <b>separation of decision management from decision control</b> (Fama &amp; Jensen, 1983): whoever frames and makes a call should not also be the one who ratifies it when they hold a stake in the outcome.</p>
+        <p>The impact shows up in behaviour, not just fairness. Greer, Jordan and Sytch (2026) document that rights dictated top-down — the "boss's spreadsheet" — produce <b>no buy-in</b>, so people quietly decline to play their roles; that deciders who act on <b>rank rather than the best-informed view</b> degrade decision quality (in their case a senior partner overrode the due-diligence data on instinct and passed on a future unicorn); and that concentrating the call in one contested meeting breeds <b>power struggles and disengagement</b>. The pattern compounds: self- and group-serving bias in the decider, suppressed <b>voice</b> (Edmondson, 1999), and lost local knowledge (Hayek, 1945).</p>
+        <p>The correction is <b>structural, not moral</b>. Co-create the rights rather than dictate them; give the call to whoever is closest to the work and <b>least conflicted</b>; and for high-stakes or complex decisions move to <b>consent</b> — a distributed, reasoned veto a single stakeholder cannot capture — or the <b>advice process</b>, where the decider must seek and publish advice. Those are the two methods this tool recommends exactly where the rights tools turn "Avoid."</p>
+      </div>
     </div>
     </div>
+  </section>
+
+  <section class="card sources">
+    <button type="button" class="sci-toggle" id="refsToggle" aria-expanded="false" aria-controls="refsContent">
+      <h2>Sources</h2>
+      <span class="hint"><svg class="chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>
+    <ul class="refs" id="refsContent" hidden>
+      <li>Arrow, K. J. (1951). <i>Social choice and individual values</i>. Wiley.</li>
+      <li>Bakke, D. W. (2013). <i>The decision maker: Unlock the potential of everyone in your organization, one decision at a time</i>. Pear Press.</li>
+      <li>Edmondson, A. C. (1999). Psychological safety and learning behavior in work teams. <i>Administrative Science Quarterly, 44</i>(2), 350–383.</li>
+      <li>Fama, E. F., &amp; Jensen, M. C. (1983). Separation of ownership and control. <i>Journal of Law and Economics, 26</i>(2), 301–325.</li>
+      <li>Greer, L., Jordan, J., &amp; Sytch, M. (2026, July–August). What companies get wrong about decision rights. <i>Harvard Business Review</i>.</li>
+      <li>Harmel-Law, A., &amp; Wells, M. (2025). <i>Facilitating software architecture</i>. O'Reilly.</li>
+      <li>Hayek, F. A. (1945). The use of knowledge in society. <i>American Economic Review, 35</i>(4), 519–530.</li>
+      <li>Keeney, R. L., &amp; Raiffa, H. (1976). <i>Decisions with multiple objectives</i>. Wiley.</li>
+      <li>Rau, T. J., &amp; Koch-Gonzalez, J. (2018). <i>Many voices one song</i>. Sociocracy For All.</li>
+      <li>Rogers, P., &amp; Blenko, M. (2006). Who has the D? <i>Harvard Business Review, 84</i>(1).</li>
+      <li>Simon, H. A. (1947). <i>Administrative behavior</i>. Macmillan.</li>
+      <li>Snowden, D. J., &amp; Boone, M. E. (2007). A leader's framework for decision making. <i>Harvard Business Review, 85</i>(11).</li>
+      <li>Stacey, R. D. (1996). <i>Complexity and creativity in organizations</i>. Berrett-Koehler.</li>
+      <li>Vroom, V. H., &amp; Yetton, P. W. (1973). <i>Leadership and decision-making</i>. Univ. of Pittsburgh Press.</li>
+      <li>Vroom, V. H., &amp; Jago, A. G. (1988). <i>The new leadership</i>. Prentice Hall.</li>
+    </ul>
   </section>
 
   <p class="foot"><b>Reading it.</b> The dark marker on the spectrum bar shows the <b>decentralisation demand</b> of the current profile — it moves continuously as you tune, even when the named method hasn't yet flipped. Allocation tools (DARE/RACI/RAPID/DACI) presuppose a single accountable Decider, so as the recommendation crosses into Consent, Democratic or Consensus they are marked <b>Avoid</b> — not because they are bad, but because they re-install the single-Decider veto those methods deliberately remove; there you shift to consented, time-boxed roles and a visible decision log. A reasoning aid, not a substitute for judgement. Method spectrum after Harmel-Law &amp; Wells (2025).</p>
@@ -511,20 +515,14 @@ function render(){
 }
 render();
 
-const sciToggle=document.getElementById("sciToggle");
-const sciContent=document.getElementById("sciContent");
-sciToggle.addEventListener("click",()=>{
-  const open=sciToggle.getAttribute("aria-expanded")==="true";
-  sciToggle.setAttribute("aria-expanded",String(!open));
-  sciContent.hidden=open;
-});
-
-const refsToggle=document.getElementById("refsToggle");
-const refsContent=document.getElementById("refsContent");
-refsToggle.addEventListener("click",()=>{
-  const open=refsToggle.getAttribute("aria-expanded")==="true";
-  refsToggle.setAttribute("aria-expanded",String(!open));
-  refsContent.hidden=open;
+[["sciToggle","sciContent"],["misuseToggle","misuseContent"],["refsToggle","refsContent"]].forEach(([btnId,contentId])=>{
+  const btn=document.getElementById(btnId);
+  const content=document.getElementById(contentId);
+  btn.addEventListener("click",()=>{
+    const open=btn.getAttribute("aria-expanded")==="true";
+    btn.setAttribute("aria-expanded",String(!open));
+    content.hidden=open;
+  });
 });
 </script>
 </body>
