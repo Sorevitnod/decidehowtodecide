@@ -126,6 +126,12 @@
     font-size:12px;color:var(--muted-2);line-height:1.55;max-width:82ch}
   .foot b{color:var(--muted);font-weight:600}
   .science{margin-top:20px}
+  .sci-toggle{cursor:pointer;background:none;border:none;width:100%;font:inherit;text-align:left;
+    padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .sci-toggle:focus-visible{outline:2px solid var(--slate);outline-offset:-2px}
+  .sci-toggle .hint{display:inline-flex;align-items:center;gap:6px}
+  .sci-toggle .chev{display:inline-block;transition:transform .2s ease;font-size:10px}
+  .sci-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
   .sci-grid{display:grid;grid-template-columns:1fr;gap:22px 30px;padding:20px 22px}
   @media(min-width:760px){.sci-grid{grid-template-columns:1fr 1fr}}
   .sci-block .eyb{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
@@ -139,8 +145,8 @@
   .sci-full p{margin-bottom:10px}
   .sci-full p:last-child{margin-bottom:0}
   .refs{padding:4px 22px 22px;border-top:1px solid var(--line-soft);margin-top:2px}
-  .refs .eyb{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--muted-2);margin:16px 0 12px}
+  .refs-h{margin:16px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .refs-h h3{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
   .refs ul{list-style:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);line-height:1.55}
   @media(min-width:760px){.refs ul{columns:2;column-gap:34px}}
   .refs li{margin-bottom:9px;break-inside:avoid}
@@ -199,7 +205,11 @@
   </div>
 
   <section class="card science">
-    <div class="card-h"><h2>The science behind it</h2><span class="hint">where this comes from</span></div>
+    <button type="button" class="sci-toggle" id="sciToggle" aria-expanded="false" aria-controls="sciContent">
+      <h2>The science behind it</h2>
+      <span class="hint">where this comes from <span class="chev" aria-hidden="true">&#9662;</span></span>
+    </button>
+    <div id="sciContent" hidden>
     <div class="sci-grid">
       <div class="sci-block">
         <div class="eyb">Attribution</div>
@@ -240,7 +250,7 @@
       </div>
     </div>
     <div class="refs">
-      <div class="eyb">Sources</div>
+      <div class="refs-h"><h3>Sources</h3></div>
       <ul>
         <li>Arrow, K. J. (1951). <i>Social choice and individual values</i>. Wiley.</li>
         <li>Bakke, D. W. (2013). <i>The decision maker: Unlock the potential of everyone in your organization, one decision at a time</i>. Pear Press.</li>
@@ -258,6 +268,7 @@
         <li>Vroom, V. H., &amp; Yetton, P. W. (1973). <i>Leadership and decision-making</i>. Univ. of Pittsburgh Press.</li>
         <li>Vroom, V. H., &amp; Jago, A. G. (1988). <i>The new leadership</i>. Prentice Hall.</li>
       </ul>
+    </div>
     </div>
   </section>
 
@@ -492,6 +503,14 @@ function render(){
       <span class="tool-note">${t.d}</span></div>`).join("");
 }
 render();
+
+const sciToggle=document.getElementById("sciToggle");
+const sciContent=document.getElementById("sciContent");
+sciToggle.addEventListener("click",()=>{
+  const open=sciToggle.getAttribute("aria-expanded")==="true";
+  sciToggle.setAttribute("aria-expanded",String(!open));
+  sciContent.hidden=open;
+});
 </script>
 </body>
 </html>
