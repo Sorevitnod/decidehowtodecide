@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision-Method Selector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#151E27;--slate:#2C3A47;--paper:#EEF1F4;--panel:#FFFFFF;
+    --line:#D9DFE6;--line-soft:#E7EBF0;--muted:#67737F;--muted-2:#94A0AB;
+    --clay:#B26A3C;--green:#177268;--amber:#C0862B;--avoid:#9B4B48;
+    --fit-bg:#E7F1EF;--partial-bg:#F6EDDA;--avoid-bg:#F3E5E4;
+    --shadow:0 1px 2px rgba(21,30,39,.05),0 8px 28px rgba(21,30,39,.07);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"IBM Plex Sans",system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    line-height:1.5;padding:clamp(16px,3vw,40px);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  header{margin-bottom:22px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line)}
+  h1{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:600;font-size:clamp(26px,4.4vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);max-width:22ch}
+  .sub{margin-top:12px;color:var(--slate);font-size:15px;max-width:66ch}
+  .sub b{color:var(--ink);font-weight:600}
+
+  .typewrap{margin-top:20px}
+  .type-label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .types{display:flex;flex-wrap:wrap;gap:7px}
+  .type{font-size:12.5px;background:var(--panel);border:1px solid var(--line);color:var(--slate);
+    padding:6px 12px;border-radius:999px;cursor:pointer;transition:all .15s ease}
+  .type:hover{border-color:var(--slate);color:var(--ink)}
+  .type[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .type:focus-visible{outline:2px solid var(--slate);outline-offset:2px}
+  .type.reset{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted-2)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:20px;margin-top:22px}
+  @media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.02fr)}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .card-h h2{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
+  .card-h .hint{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted-2)}
+
+  .sliders{padding:6px 20px 18px}
+  .dim{padding:15px 0;border-bottom:1px solid var(--line-soft)}
+  .dim:last-child{border-bottom:none}
+  .dim-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}
+  .dim-name{font-size:14.5px;font-weight:600;color:var(--ink)}
+  .dim-read{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--slate);white-space:nowrap}
+  .poles{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:7px}
+  .poles span{max-width:47%}
+  .poles .r{text-align:right}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;
+    background:linear-gradient(90deg,var(--clay),#C9CDD3 52%,var(--green));outline:none;cursor:pointer;margin:2px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;
+    border-radius:50%;background:var(--panel);border:2px solid var(--slate);
+    box-shadow:0 1px 4px rgba(21,30,39,.28);cursor:pointer;transition:transform .12s ease}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--panel);
+    border:2px solid var(--slate);box-shadow:0 1px 4px rgba(21,30,39,.28);cursor:pointer}
+  input[type=range]:focus-visible{outline:2px solid var(--slate);outline-offset:4px}
+
+  .result-inner{padding:0;display:flex;flex-direction:column}
+  .verdict{display:flex;align-items:stretch}
+  .spine{width:8px;flex:none;border-radius:14px 0 0 0}
+  .verdict-body{padding:20px 22px;flex:1;min-width:0}
+  .domain-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.03em;padding:4px 9px;
+    border-radius:6px;border:1px solid var(--line);color:var(--slate);background:#F3F5F8}
+  .verdict-lead{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .method-name{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:clamp(28px,5vw,38px);font-weight:600;line-height:1.05;letter-spacing:-.01em}
+  .method-blurb{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.5;color:var(--slate);margin-top:10px}
+
+  /* demand spectrum bar */
+  .spectrum{margin:18px 0 2px}
+  .spec-track{position:relative;height:10px;border-radius:6px;
+    background:linear-gradient(90deg,var(--clay),#C4C9CF 50%,var(--green))}
+  .spec-marker{position:absolute;top:50%;width:3px;height:22px;background:var(--ink);
+    border-radius:2px;transform:translate(-50%,-50%);transition:left .3s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 0 0 3px var(--panel)}
+  .spec-labels{display:flex;justify-content:space-between;margin-top:7px;
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--muted-2);letter-spacing:.02em}
+  .spec-labels span{flex:1;text-align:center}
+  .spec-labels span:first-child{text-align:left}
+  .spec-labels span:last-child{text-align:right}
+
+  .section{padding:18px 22px;border-top:1px solid var(--line)}
+  .section-lead{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+
+  .rank{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .rank-name{width:104px;flex:none;font-size:13px;color:var(--slate);font-weight:500}
+  .rank-track{flex:1;height:8px;background:#EDF0F3;border-radius:6px;overflow:hidden}
+  .rank-fill{height:100%;border-radius:6px;transition:width .35s cubic-bezier(.4,0,.2,1),background .3s}
+  .rank-val{width:34px;flex:none;text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+  .rank.top .rank-name{color:var(--ink);font-weight:600}
+  .rank.top .rank-val{color:var(--ink)}
+
+  .reasons{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .reasons li{position:relative;padding-left:18px;font-size:13.5px;color:var(--slate);line-height:1.45}
+  .reasons li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--slate)}
+
+  .tools{display:flex;flex-direction:column;gap:8px}
+  .tool{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;
+    padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#FBFCFD}
+  .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;padding:3px 8px;border-radius:5px;white-space:nowrap;align-self:center}
+  .tag.fit{background:var(--fit-bg);color:var(--green)}
+  .tag.partial{background:var(--partial-bg);color:#8A5F14}
+  .tag.avoid{background:var(--avoid-bg);color:var(--avoid)}
+  .tool-name{font-weight:600;font-size:13.5px;color:var(--ink)}
+  .tool-note{font-size:12.5px;color:var(--muted);line-height:1.4;grid-column:2}
+
+  .foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--muted-2);line-height:1.55;max-width:82ch}
+  .foot b{color:var(--muted);font-weight:600}
+  .science{margin-top:20px}
+  .sci-grid{display:grid;grid-template-columns:1fr;gap:22px 30px;padding:20px 22px}
+  @media(min-width:760px){.sci-grid{grid-template-columns:1fr 1fr}}
+  .sci-block .eyb{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted-2);margin-bottom:7px}
+  .sci-block h3{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:600;font-size:17px;color:var(--ink);
+    margin-bottom:8px;line-height:1.2}
+  .sci-block p{font-size:13.5px;color:var(--slate);line-height:1.5}
+  .sci-block p b{color:var(--ink);font-weight:600}
+  .sci-full{grid-column:1/-1;border-left:3px solid var(--avoid);padding-left:17px}
+  .sci-full .eyb{color:var(--avoid)}
+  .sci-full p{margin-bottom:10px}
+  .sci-full p:last-child{margin-bottom:0}
+  .refs{padding:4px 22px 22px;border-top:1px solid var(--line-soft);margin-top:2px}
+  .refs .eyb{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted-2);margin:16px 0 12px}
+  .refs ul{list-style:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);line-height:1.55}
+  @media(min-width:760px){.refs ul{columns:2;column-gap:34px}}
+  .refs li{margin-bottom:9px;break-inside:avoid}
+  .refs i{font-style:italic}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Organisational decision-making</div>
+    <h1>Which decision method fits this decision?</h1>
+    <p class="sub">Pick what you're deciding — an <b>ADR</b>, <b>policy</b>, <b>standard</b>, <b>strategy</b>, <b>design</b>, <b>role</b> — then tune its character on the seven dimensions. The instrument proposes the best-fitting <b>decision-making method</b> and shows which <b>decision-rights tools</b> (DARE, RACI, RAPID, DACI) fit it, and which quietly break it.</p>
+    <div class="typewrap">
+      <div class="type-label">What are you deciding?</div>
+      <div class="types" id="types"></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <div class="card-h"><h2>The decision, in seven dimensions</h2><span class="hint">drag to tune</span></div>
+      <div class="sliders" id="sliders"></div>
+    </section>
+
+    <section class="card result-inner">
+      <div class="verdict">
+        <div class="spine" id="spine"></div>
+        <div class="verdict-body">
+          <div class="domain-row" id="domainRow"></div>
+          <div class="verdict-lead">Best-fitting method</div>
+          <div class="method-name" id="methodName">—</div>
+          <div class="method-blurb" id="methodBlurb"></div>
+          <div class="spectrum">
+            <div class="spec-track"><div class="spec-marker" id="marker" style="left:50%"></div></div>
+            <div class="spec-labels">
+              <span>Autocratic</span><span>Delegation</span><span>Consultative</span><span>Advice</span><span>Consent</span><span>Democratic</span><span>Consensus</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-lead">How the methods rank</div>
+        <div id="ranked"></div>
+      </div>
+      <div class="section">
+        <div class="section-lead">Why</div>
+        <ul class="reasons" id="reasons"></ul>
+      </div>
+      <div class="section">
+        <div class="section-lead">Compatible decision-rights tools</div>
+        <div class="tools" id="tools"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card science">
+    <div class="card-h"><h2>The science behind it</h2><span class="hint">where this comes from</span></div>
+    <div class="sci-grid">
+      <div class="sci-block">
+        <div class="eyb">Attribution</div>
+        <h3>The methods came first; the map came later</h3>
+        <p>The seven processes on the spectrum are not Harmel-Law's invention — they are long-standing decision rules from separate traditions. The <b>autocratic–consultative–delegative–group</b> ladder is the participative-leadership taxonomy of <b>Vroom and Yetton (1973)</b>, refined with Jago (1988). <b>Consent</b> comes from the sociocratic movement — rooted in Quaker practice, formalised by <b>Gerard Endenburg</b> in the 1970s and codified for modern use by Rau and Koch-Gonzalez (2018). <b>Voting and consensus</b> trace back to social-choice theory and cooperative governance (Arrow, 1951). The <b>advice process</b> was developed by <b>Dennis Bakke</b> at AES Corporation in the 1980s–90s and set out in <i>The Decision Maker</i> (2013): anyone can make any decision provided they seek advice from those meaningfully affected and from relevant experts, then decide and log the reasoning. It is distinct from consultative (the initiation right is at the edge, not held by the boss) and from consent (there is no veto — the decider still decides). What <b>Harmel-Law and Wells (2025)</b> added is the comparison itself: plotting these standard processes against decentralisation of decision rights and response speed, and splitting each decision into option-making, decision-taking and decision-sharing.</p>
+      </div>
+      <div class="sci-block">
+        <div class="eyb">Contingency logic</div>
+        <h3>Matching the method to the decision</h3>
+        <p>The engine is a <b>contingency model</b>. Vroom–Yetton set the logic: choose the method by decision-quality needs, acceptance and commitment requirements, time pressure, and where the information sits. The complexity axis draws on <b>Snowden and Boone's Cynefin framework (2007)</b>, which separates clear, complicated, complex and chaotic domains and prescribes a different response for each — analyse in the complicated domain, but probe–sense–respond (experiment) in the complex one. The certainty-versus-agreement reading is the <b>Stacey matrix</b>. That is why the tool proposes analytical, expert-led methods for complicated decisions and consent's "safe-to-try" experiments for complex ones.</p>
+      </div>
+      <div class="sci-block">
+        <div class="eyb">The case for decentralising</div>
+        <h3>Why pushing decisions outward can help</h3>
+        <p>Two classic arguments underpin the decentralised end. <b>Hayek (1945)</b> held that the knowledge needed for good decisions is dispersed and local, so decisions improve when made close to that knowledge. <b>Simon's bounded rationality</b> explains why no single decider can optimise a complex, interdependent problem: people satisfice under cognitive and time limits, so distributing and integrating judgement — as consent does through reasoned objections — can outperform one mind. Both effects hold only where there is psychological safety and voice (<b>Edmondson, 1999</b>).</p>
+      </div>
+      <div class="sci-block">
+        <div class="eyb">A separate lineage</div>
+        <h3>Why the rights tools sit apart</h3>
+        <p><b>RACI, RAPID, DARE and DACI</b> are practitioner tools, not decision rules. RAPID was developed by <b>Bain &amp; Company</b>; DACI at <b>Intuit</b>; the case for naming a single decision owner was made in Rogers and Blenko's <b>"Who Has the D?" (2006)</b>. They allocate roles around a decision that already assumes one accountable decider — which is why the tool marks them <b>Avoid</b> the moment the recommendation crosses into consent, democratic or consensus territory.</p>
+      </div>
+      <div class="sci-block sci-full">
+        <div class="eyb">Capture &amp; misuse</div>
+        <h3>When rights tools are turned into weapons</h3>
+        <p>Because these tools concentrate the final say in one named role, they can be <b>captured</b> — used to formalise a power imbalance rather than to check it. The clearest abuse is naming a Decider who is also a <b>stakeholder in the decision</b>: someone on the very team the decision affects. With no counter-veto and advice that is <b>non-binding by design</b>, consultation becomes cosmetic and the tool lends a pre-existing asymmetry the appearance of due process. In governance terms this collapses the <b>separation of decision management from decision control</b> (Fama &amp; Jensen, 1983): whoever frames and makes a call should not also be the one who ratifies it when they hold a stake in the outcome.</p>
+        <p>The impact shows up in behaviour, not just fairness. Greer, Jordan and Sytch (2026) document that rights dictated top-down — the "boss's spreadsheet" — produce <b>no buy-in</b>, so people quietly decline to play their roles; that deciders who act on <b>rank rather than the best-informed view</b> degrade decision quality (in their case a senior partner overrode the due-diligence data on instinct and passed on a future unicorn); and that concentrating the call in one contested meeting breeds <b>power struggles and disengagement</b>. The pattern compounds: self- and group-serving bias in the decider, suppressed <b>voice</b> (Edmondson, 1999), and lost local knowledge (Hayek, 1945).</p>
+        <p>The correction is <b>structural, not moral</b>. Co-create the rights rather than dictate them; give the call to whoever is closest to the work and <b>least conflicted</b>; and for high-stakes or complex decisions move to <b>consent</b> — a distributed, reasoned veto a single stakeholder cannot capture — or the <b>advice process</b>, where the decider must seek and publish advice. Those are the two methods this tool recommends exactly where the rights tools turn "Avoid."</p>
+      </div>
+      <div class="sci-block">
+        <div class="eyb">Honesty about the model</div>
+        <h3>What this instrument is — and isn't</h3>
+        <p>The scoring is a transparent, <b>weighted additive heuristic</b> in the spirit of multi-attribute decision analysis (<b>Keeney &amp; Raiffa, 1976</b>): each dimension contributes, by a stated weight, to a single decentralisation-demand score that maps onto the spectrum. The weights are reasoned defaults, <b>not empirically calibrated coefficients</b>, and the boundaries between methods are deliberately soft. Treat the output as a structured prompt for judgement, not a verdict.</p>
+      </div>
+      <div class="sci-block">
+        <div class="eyb">In one line</div>
+        <h3>The through-line</h3>
+        <p>No method wins everywhere. Good decision-making is <b>fit-for-purpose</b>: it matches the character of the decision — its urgency, reversibility, complexity, where the knowledge sits, and how much buy-in it needs — to the right distribution of decision rights, and only then to the right role-allocation tool.</p>
+      </div>
+    </div>
+    <div class="refs">
+      <div class="eyb">Sources</div>
+      <ul>
+        <li>Arrow, K. J. (1951). <i>Social choice and individual values</i>. Wiley.</li>
+        <li>Bakke, D. W. (2013). <i>The decision maker: Unlock the potential of everyone in your organization, one decision at a time</i>. Pear Press.</li>
+        <li>Edmondson, A. C. (1999). Psychological safety and learning behavior in work teams. <i>Administrative Science Quarterly, 44</i>(2), 350–383.</li>
+        <li>Fama, E. F., &amp; Jensen, M. C. (1983). Separation of ownership and control. <i>Journal of Law and Economics, 26</i>(2), 301–325.</li>
+        <li>Greer, L., Jordan, J., &amp; Sytch, M. (2026, July–August). What companies get wrong about decision rights. <i>Harvard Business Review</i>.</li>
+        <li>Harmel-Law, A., &amp; Wells, M. (2025). <i>Facilitating software architecture</i>. O'Reilly.</li>
+        <li>Hayek, F. A. (1945). The use of knowledge in society. <i>American Economic Review, 35</i>(4), 519–530.</li>
+        <li>Keeney, R. L., &amp; Raiffa, H. (1976). <i>Decisions with multiple objectives</i>. Wiley.</li>
+        <li>Rau, T. J., &amp; Koch-Gonzalez, J. (2018). <i>Many voices one song</i>. Sociocracy For All.</li>
+        <li>Rogers, P., &amp; Blenko, M. (2006). Who has the D? <i>Harvard Business Review, 84</i>(1).</li>
+        <li>Simon, H. A. (1947). <i>Administrative behavior</i>. Macmillan.</li>
+        <li>Snowden, D. J., &amp; Boone, M. E. (2007). A leader's framework for decision making. <i>Harvard Business Review, 85</i>(11).</li>
+        <li>Stacey, R. D. (1996). <i>Complexity and creativity in organizations</i>. Berrett-Koehler.</li>
+        <li>Vroom, V. H., &amp; Yetton, P. W. (1973). <i>Leadership and decision-making</i>. Univ. of Pittsburgh Press.</li>
+        <li>Vroom, V. H., &amp; Jago, A. G. (1988). <i>The new leadership</i>. Prentice Hall.</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="foot"><b>Reading it.</b> The dark marker on the spectrum bar shows the <b>decentralisation demand</b> of the current profile — it moves continuously as you tune, even when the named method hasn't yet flipped. Allocation tools (DARE/RACI/RAPID/DACI) presuppose a single accountable Decider, so as the recommendation crosses into Consent, Democratic or Consensus they are marked <b>Avoid</b> — not because they are bad, but because they re-install the single-Decider veto those methods deliberately remove; there you shift to consented, time-boxed roles and a visible decision log. A reasoning aid, not a substitute for judgement. Method spectrum after Harmel-Law &amp; Wells (2025).</p>
+</div>
+
+<script>
+const DIMS=[
+  {key:"U",name:"Time pressure",left:"Can wait — plenty of runway",right:"Decide now — urgent"},
+  {key:"R",name:"Reversibility",left:"Irreversible — one-way door",right:"Reversible — two-way door"},
+  {key:"P",name:"Predictability of cause & effect",left:"Emergent — unknowable in advance",right:"Knowable — analysable"},
+  {key:"I",name:"Interdependence",left:"Self-contained — few parts",right:"Interconnected — many parts, feedback"},
+  {key:"K",name:"Where the knowledge sits",left:"Concentrated in one expert",right:"Dispersed across many people"},
+  {key:"A",name:"Stakeholder agreement",left:"Contested — divergent interests",right:"Aligned — shared view"},
+  {key:"B",name:"Buy-in / adoption needed",left:"Low — compliance is enough",right:"High — needs willing commitment"},
+];
+
+const CENTRAL={Autocratic:8,Delegation:26,Consultative:44,Advice:55,Consent:63,Democratic:79,Consensus:93};
+const BLURB={
+  Autocratic:"One person decides. Fastest and most centralised — right when the clock dominates and expertise is concentrated.",
+  Delegation:"Authority is handed to whoever is closest and best-informed, while accountability stays clear.",
+  Consultative:"The owner gathers input, then decides. Works when advice is genuinely integrated rather than symbolic.",
+  Advice:"Anyone can make the call, provided they seek advice from everyone meaningfully affected and from relevant experts \u2014 then decide, and publish the rationale. Fast and decentralised at initiation, without a veto.",
+  Consent:"A proposal stands if no one raises a reasoned, paramount objection \u2014 \u201Cgood enough for now, safe enough to try.\u201D Built for complex, emergent decisions where harm-of-implementation matters.",
+  Democratic:"The group votes. Best when legitimacy and fairness matter more than raw speed and the options are clear.",
+  Consensus:"Everyone must be able to live with the outcome. Reserve for identity-defining or irreversible choices \u2014 powerful but slow."
+};
+
+const TOOLS={
+  Autocratic:[
+    {t:"fit",n:"DARE",d:"The single Decider is explicit; fastest way to make the call unambiguous."},
+    {t:"fit",n:"DACI",d:"One Approver, minimal ceremony \u2014 suits a solo call under time pressure."},
+    {t:"partial",n:"RAPID",d:"Usable, but heavier than a one-person decision needs."},
+    {t:"fit",n:"RACI / ARCI",d:"Keep it to one Accountable plus a few Informed."},
+  ],
+  Delegation:[
+    {t:"fit",n:"DARE",d:"Name the delegate as Decider and log the mandate and its limits."},
+    {t:"fit",n:"RAPID",d:"Cleanly separates Recommend from Decide when you hand the call down."},
+    {t:"fit",n:"DACI",d:"Driver runs it; the delegate is Approver."},
+    {t:"fit",n:"RACI",d:"Fine for clarifying who does the work around the delegate."},
+  ],
+  Consultative:[
+    {t:"fit",n:"RAPID",d:"Its Input / Recommend / Decide split is exactly \u201Cconsult, then decide.\u201D"},
+    {t:"fit",n:"DARE",d:"Advisors and Recommenders map straight onto the consultation."},
+    {t:"fit",n:"DACI",d:"Contributors feed a single Approver."},
+    {t:"partial",n:"RACI",d:"Works, but make advice visibly integrated or it becomes consultation theatre."},
+  ],
+  Advice:[
+    {t:"fit",n:"Advice log",d:"The signature artefact: proposal, advice sought, advice received, decision, rationale \u2014 visible to all."},
+    {t:"fit",n:"DARE \u2014 at the edge",d:"Fits, but the Decider is whoever is closest to the work, not the senior person. Advice-seeking is substantive, not cosmetic."},
+    {t:"fit",n:"RAPID \u2014 at the edge",d:"Works, provided Decide sits with the initiator and Input is genuinely integrated."},
+    {t:"partial",n:"DACI",d:"Usable if the Approver is the initiator; loses meaning if it becomes senior-signoff."},
+    {t:"avoid",n:"RACI \u2014 top-down variant",d:"An Accountable assigned by rank re-creates the abuse pattern the advice process is designed to prevent."},
+  ],
+  Consent:[
+    {t:"fit",n:"Sociocratic / S3 roles",d:"Proposer, facilitator, circle and recorder \u2014 roles themselves consented and time-boxed."},
+    {t:"fit",n:"Advice-process log",d:"Record the proposal, the objections raised, and the rationale, in the open."},
+    {t:"avoid",n:"DARE / DACI",d:"Hard-wire a single Decider \u2014 they re-install the veto that consent removes."},
+    {t:"avoid",n:"RAPID / RACI",d:"A single Accountable owner contradicts ratification-by-no-objection."},
+  ],
+  Democratic:[
+    {t:"fit",n:"Voting rule + teller",d:"State the threshold (majority / supermajority) and who counts and records the vote."},
+    {t:"partial",n:"Driver / facilitator",d:"Someone runs the process \u2014 but the \u201CApprover\u201D is the electorate, not a person."},
+    {t:"avoid",n:"DARE / DACI",d:"No single Approver exists, so the core role can't be assigned."},
+    {t:"avoid",n:"RAPID",d:"Its Decide role has no owner under majority voting."},
+  ],
+  Consensus:[
+    {t:"fit",n:"Facilitation roles",d:"Facilitator and recorder, plus an explicit consensus rule agreed up front."},
+    {t:"avoid",n:"DARE / RAPID",d:"No single owner \u2014 the whole point is collective assent."},
+    {t:"avoid",n:"RACI / DACI",d:"An Accountable / Approver contradicts \u201Ceveryone can live with it.\u201D"},
+  ],
+};
+
+// decision-type seed profiles (starting points, tunable)
+const TYPES={
+ "ADR":{U:45,R:60,P:50,I:60,K:60,A:55,B:65},
+ "Standard":{U:35,R:55,P:60,I:75,K:65,A:45,B:75},
+ "Design":{U:45,R:72,P:38,I:60,K:65,A:50,B:55},
+ "Feature":{U:58,R:82,P:62,I:45,K:42,A:55,B:45},
+ "Foundational":{U:15,R:22,P:45,I:82,K:80,A:45,B:92},
+ "Strategy":{U:35,R:42,P:55,I:72,K:52,A:32,B:80},
+ "Process":{U:35,R:60,P:60,I:70,K:65,A:50,B:72},
+ "Policy":{U:30,R:60,P:66,I:70,K:52,A:38,B:80},
+ "Norm":{U:18,R:68,P:32,I:68,K:82,A:48,B:80},
+ "Meeting":{U:35,R:86,P:55,I:52,K:66,A:56,B:60},
+ "Decision":{U:62,R:50,P:66,I:44,K:38,A:56,B:44},
+ "Measure":{U:40,R:60,P:72,I:60,K:50,A:44,B:60},
+ "Role":{U:35,R:55,P:55,I:66,K:72,A:50,B:72},
+ "Charter":{U:28,R:42,P:48,I:78,K:66,A:44,B:82},
+};
+const TYPE_EG={
+ "ADR":"Architecture decision record","Standard":"e.g. coding, security, API standard",
+ "Design":"System or product design","Feature":"Ship X in the product",
+ "Foundational":"Purpose, principles, values","Strategy":"Priorities, trade-offs, goals",
+ "Process":"Onboarding, hiring, decision-making","Policy":"Vacation, Slack, remote work",
+ "Norm":"Habits, rituals, citizenship","Meeting":"Standup, retro, retreat",
+ "Decision":"Hire X, invest in Y, use Z","Measure":"Metrics, KPIs, OKRs",
+ "Role":"Engineer, designer, facilitator","Charter":"New project, team or circle",
+};
+
+const state={};DIMS.forEach(d=>state[d.key]=50);
+
+// build sliders
+const slidersEl=document.getElementById("sliders");
+DIMS.forEach(d=>{
+  const row=document.createElement("div");row.className="dim";
+  row.innerHTML=`<div class="dim-top"><span class="dim-name">${d.name}</span>
+      <span class="dim-read" id="read-${d.key}">50</span></div>
+    <input type="range" min="0" max="100" value="50" id="in-${d.key}" aria-label="${d.name}" aria-valuetext="50 of 100">
+    <div class="poles"><span>${d.left}</span><span class="r">${d.right}</span></div>`;
+  slidersEl.appendChild(row);
+  row.querySelector("input").addEventListener("input",e=>{
+    state[d.key]=+e.target.value;
+    document.getElementById("read-"+d.key).textContent=e.target.value;
+    e.target.setAttribute("aria-valuetext",e.target.value+" of 100");
+    clearType();render();
+  });
+});
+
+// build type chips
+const typesEl=document.getElementById("types");
+let activeType=null;
+Object.keys(TYPES).forEach(t=>{
+  const b=document.createElement("button");b.className="type";b.textContent=t;
+  b.setAttribute("aria-pressed","false");b.title=TYPE_EG[t]||"";
+  b.addEventListener("click",()=>{
+    activeType=t;
+    document.querySelectorAll(".type").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    const v=TYPES[t];
+    DIMS.forEach(d=>{state[d.key]=v[d.key];
+      const inp=document.getElementById("in-"+d.key);
+      inp.value=v[d.key];inp.setAttribute("aria-valuetext",v[d.key]+" of 100");
+      document.getElementById("read-"+d.key).textContent=v[d.key];});
+    render();
+  });
+  typesEl.appendChild(b);
+});
+const reset=document.createElement("button");reset.className="type reset";reset.textContent="Reset · balanced";
+reset.addEventListener("click",()=>{DIMS.forEach(d=>{state[d.key]=50;
+  const inp=document.getElementById("in-"+d.key);inp.value=50;
+  document.getElementById("read-"+d.key).textContent=50;});clearType();render();});
+typesEl.appendChild(reset);
+function clearType(){activeType=null;document.querySelectorAll(".type").forEach(x=>x.setAttribute("aria-pressed","false"));}
+
+// logic
+function demand(s){const cU=100-s.U,cK=s.K,cB=s.B,cI=s.I,cP=100-s.P,cR=100-s.R,cA=100-s.A;
+  return (1.3*cU+1.5*cK+1.4*cB+1.0*cI+1.1*cP+0.6*cR+0.7*cA)/7.6;}
+function domainOf(s){if(s.U>=80&&s.P<=40)return"Chaotic / crisis";
+  const c=(100-s.P)*0.45+s.I*0.30+(100-s.A)*0.25;
+  if(c>=62)return"Complex";if(c>=42)return"Complicated";return"Clear";}
+function avoidantViable(s){return s.U<=22&&s.R>=72&&s.P<=42;}
+function recommend(s){
+  const D=demand(s);const dom=domainOf(s);
+  let base=Object.keys(CENTRAL).sort((a,b)=>Math.abs(CENTRAL[a]-D)-Math.abs(CENTRAL[b]-D))[0];
+  if(s.U>=88&&s.R<=60)base="Autocratic";
+  if(s.R<=25&&s.B>=88&&s.I>=75&&s.U<=25)base="Consensus";
+  if((base==="Democratic"||base==="Consensus")&&dom==="Complex"&&s.B<88&&s.R>=25&&s.I>=60)base="Consent";
+  if(base==="Consent"&&s.P>=60&&s.A<=32&&s.B>=65)base="Democratic";
+  if(base==="Consent"&&s.K<=35&&s.B<=45)base="Consultative";
+  // Advice-process routing: two-way-door with real buy-in and dispersed knowledge, without heavy interdependence
+  if((base==="Consultative"||base==="Consent")&&s.R>=60&&s.B>=60&&s.K>=55&&s.I<=72&&s.U<=75){
+    if(base==="Consent"&&s.I>=68&&s.P<=40)base="Consent"; // keep Consent when it's genuinely complex + interdependent
+    else base="Advice";
+  }
+  // Escalate Advice to Consent when reversibility drops or interdependence spikes
+  if(base==="Advice"&&(s.R<=40||s.I>=78||(dom==="Complex"&&s.P<=32)))base="Consent";
+  return {m:base,D,dom};
+}
+
+const CLAY=[178,106,60],SLATE=[91,107,114],GREEN=[23,114,104];
+const lerp=(a,b,t)=>a+(b-a)*t;
+const hex=c=>"#"+c.map(x=>Math.round(x).toString(16).padStart(2,"0")).join("");
+function poleColour(pos){const t=pos/100;
+  if(t<=0.5){const u=t/0.5;return hex([lerp(CLAY[0],SLATE[0],u),lerp(CLAY[1],SLATE[1],u),lerp(CLAY[2],SLATE[2],u)]);}
+  const u=(t-0.5)/0.5;return hex([lerp(SLATE[0],GREEN[0],u),lerp(SLATE[1],GREEN[1],u),lerp(SLATE[2],GREEN[2],u)]);}
+
+function reasons(s){
+  const R=[];const add=(c,txt,str)=>{if(c)R.push({txt,str});};
+  add(s.U>70,"High time pressure pushes towards a faster, more centralised call.",s.U);
+  add(s.U<30,"Low urgency leaves room for a more participative, decentralised process.",100-s.U);
+  add(s.K>70,"Knowledge is dispersed, so those closest to the work should shape the decision.",s.K);
+  add(s.K<30,"Knowledge is concentrated, which favours an expert-led call.",100-s.K);
+  add(s.R<30,"The decision is hard to reverse, so guarding against harm outweighs speed.",100-s.R);
+  add(s.R>75,"The decision is reversible, so a safe-to-try approach carries little risk.",s.R);
+  add(s.P<30,"Cause and effect are emergent \u2014 treat the decision as an experiment, not a solvable puzzle.",100-s.P);
+  add(s.P>75,"Cause and effect are knowable, so analysis can find a defensible answer.",s.P);
+  add(s.I>72,"High interdependence means several parties must coordinate to make it work.",s.I);
+  add(s.B>72,"Strong buy-in is needed, which genuine participation tends to secure.",s.B);
+  add(s.A<30,"Stakeholders disagree, so a reasoned-objection or voting mechanism protects legitimacy.",100-s.A);
+  R.sort((a,b)=>b.str-a.str);return R.slice(0,3).map(r=>r.txt);
+}
+
+function render(){
+  const {m,D,dom}=recommend(state);
+  const col=poleColour(CENTRAL[m]);
+
+  document.getElementById("spine").style.background=col;
+  const mn=document.getElementById("methodName");mn.textContent=m;mn.style.color=col;
+  document.getElementById("methodBlurb").textContent=BLURB[m];
+  document.getElementById("marker").style.left=D+"%";
+
+  const posLabel=CENTRAL[m]<40?"Centralised":CENTRAL[m]>60?"Decentralised":"Mid-spectrum";
+  let chips=`<span class="chip">Domain \u00B7 ${dom}</span>
+    <span class="chip" style="border-color:${col};color:${col}">${posLabel} \u00B7 demand ${Math.round(D)}/100</span>`;
+  if(avoidantViable(state))chips+=`<span class="chip">Deferring is also viable</span>`;
+  document.getElementById("domainRow").innerHTML=chips;
+
+  // ranked by proximity to D, recommended forced to top
+  let ranked=Object.keys(CENTRAL).map(k=>({k,score:Math.max(6,Math.round(100-Math.abs(CENTRAL[k]-D)*1.15))}));
+  ranked.sort((a,b)=>b.score-a.score);
+  ranked=[ranked.find(r=>r.k===m),...ranked.filter(r=>r.k!==m)];
+  document.getElementById("ranked").innerHTML=ranked.map((r,i)=>`
+    <div class="rank ${i===0?'top':''}">
+      <span class="rank-name">${r.k}</span>
+      <span class="rank-track"><span class="rank-fill" style="width:${r.score}%;background:${poleColour(CENTRAL[r.k])}"></span></span>
+      <span class="rank-val">${r.score}</span></div>`).join("");
+
+  const rs=reasons(state);
+  document.getElementById("reasons").innerHTML=
+    (rs.length?rs:["The profile is balanced \u2014 no single dimension dominates. Nudge a slider to see the trade-off shift."])
+    .map(t=>`<li>${t}</li>`).join("");
+
+  document.getElementById("tools").innerHTML=(TOOLS[m]||[]).map(t=>`
+    <div class="tool">
+      <span class="tag ${t.t}">${t.t==='fit'?'Fits':t.t==='partial'?'Partial':'Avoid'}</span>
+      <span class="tool-name">${t.n}</span>
+      <span class="tool-note">${t.d}</span></div>`).join("");
+}
+render();
+</script>
+</body>
+</html>
