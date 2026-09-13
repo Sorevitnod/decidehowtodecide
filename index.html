@@ -128,10 +128,11 @@
   .science{margin-top:20px}
   .sci-toggle{cursor:pointer;background:none;border:none;width:100%;font:inherit;text-align:left;
     padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .sci-toggle h2{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
   .sci-toggle:focus-visible{outline:2px solid var(--slate);outline-offset:-2px}
   .sci-toggle .hint{display:inline-flex;align-items:center;gap:6px}
-  .sci-toggle .chev{display:inline-block;transition:transform .2s ease;font-size:10px}
-  .sci-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  .chev{display:inline-block;flex:none;color:var(--muted-2);transition:transform .2s ease}
+  [aria-expanded="true"] .chev{transform:rotate(180deg)}
   .sci-grid{display:grid;grid-template-columns:1fr;gap:22px 30px;padding:20px 22px}
   @media(min-width:760px){.sci-grid{grid-template-columns:1fr 1fr}}
   .sci-block .eyb{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
@@ -145,8 +146,11 @@
   .sci-full p{margin-bottom:10px}
   .sci-full p:last-child{margin-bottom:0}
   .refs{padding:4px 22px 22px;border-top:1px solid var(--line-soft);margin-top:2px}
-  .refs-h{margin:16px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
-  .refs-h h3{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
+  .refs-toggle{cursor:pointer;background:none;border:none;width:100%;font:inherit;text-align:left;
+    margin:16px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .refs-toggle:focus-visible{outline:2px solid var(--slate);outline-offset:-2px}
+  .refs-toggle h3{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--slate)}
   .refs ul{list-style:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);line-height:1.55}
   @media(min-width:760px){.refs ul{columns:2;column-gap:34px}}
   .refs li{margin-bottom:9px;break-inside:avoid}
@@ -207,7 +211,7 @@
   <section class="card science">
     <button type="button" class="sci-toggle" id="sciToggle" aria-expanded="false" aria-controls="sciContent">
       <h2>The science behind it</h2>
-      <span class="hint">where this comes from <span class="chev" aria-hidden="true">&#9662;</span></span>
+      <span class="hint"><svg class="chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </button>
     <div id="sciContent" hidden>
     <div class="sci-grid">
@@ -250,8 +254,11 @@
       </div>
     </div>
     <div class="refs">
-      <div class="refs-h"><h3>Sources</h3></div>
-      <ul>
+      <button type="button" class="refs-toggle" id="refsToggle" aria-expanded="false" aria-controls="refsContent">
+        <h3>Sources</h3>
+        <svg class="chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <ul id="refsContent" hidden>
         <li>Arrow, K. J. (1951). <i>Social choice and individual values</i>. Wiley.</li>
         <li>Bakke, D. W. (2013). <i>The decision maker: Unlock the potential of everyone in your organization, one decision at a time</i>. Pear Press.</li>
         <li>Edmondson, A. C. (1999). Psychological safety and learning behavior in work teams. <i>Administrative Science Quarterly, 44</i>(2), 350–383.</li>
@@ -510,6 +517,14 @@ sciToggle.addEventListener("click",()=>{
   const open=sciToggle.getAttribute("aria-expanded")==="true";
   sciToggle.setAttribute("aria-expanded",String(!open));
   sciContent.hidden=open;
+});
+
+const refsToggle=document.getElementById("refsToggle");
+const refsContent=document.getElementById("refsContent");
+refsToggle.addEventListener("click",()=>{
+  const open=refsToggle.getAttribute("aria-expanded")==="true";
+  refsToggle.setAttribute("aria-expanded",String(!open));
+  refsContent.hidden=open;
 });
 </script>
 </body>
