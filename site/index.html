@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Helpers</title>
+<meta name="description" content="A small family of decision helpers: choose how a decision should be made, and decide whether a task needs a workflow, AI, or an agent.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"IBM Plex Sans",system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    line-height:1.5;padding:clamp(16px,3vw,40px);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  header{margin-bottom:30px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line)}
+  h1{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:600;font-size:clamp(28px,4.8vw,44px);
+    line-height:1.06;letter-spacing:-.01em;color:var(--ink);max-width:20ch}
+  .sub{margin-top:14px;color:var(--slate);font-size:16px;max-width:70ch}
+  .sub b{color:var(--ink);font-weight:600}
+
+  .grid-label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted);margin:34px 0 14px}
+
+  .cards{display:grid;grid-template-columns:1fr;gap:20px}
+  @media(min-width:760px){.cards{grid-template-columns:1fr 1fr}}
+
+  .helper{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);text-decoration:none;color:inherit;overflow:hidden;
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+  .helper:hover{transform:translateY(-3px);border-color:var(--slate);
+    box-shadow:0 2px 4px rgba(21,30,39,.06),0 16px 40px rgba(21,30,39,.11)}
+  .helper:focus-visible{outline:2px solid var(--slate);outline-offset:3px}
+  .helper .spine{width:8px;flex:none}
+  .helper .body{padding:22px 24px 24px;display:flex;flex-direction:column;min-width:0}
+
+  .kind{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--muted-2);margin-bottom:11px;display:flex;align-items:center;gap:8px}
+  .kind .dot{width:6px;height:6px;border-radius:50%;flex:none}
+
+  .helper h2{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:22px;font-weight:600;
+    line-height:1.15;letter-spacing:-.01em;color:var(--ink)}
+  .answers{font-size:13.5px;color:var(--slate);margin-top:10px;line-height:1.5}
+  .answers b{color:var(--ink);font-weight:600}
+  .desc{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.55;flex:1}
+
+  .cta{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;letter-spacing:.04em;
+    margin-top:18px;display:inline-flex;align-items:center;gap:7px;color:var(--ink)}
+  .cta .arr{transition:transform .18s ease}
+  .helper:hover .cta .arr{transform:translateX(4px)}
+
+  .soon{border-style:dashed;box-shadow:none;background:#F6F8FA;cursor:default}
+  .soon:hover{transform:none;border-color:var(--line);box-shadow:none}
+  .soon .body{opacity:.72}
+  .soon h2{color:var(--slate)}
+
+  .foot{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--muted-2);line-height:1.6;max-width:80ch}
+  .foot b{color:var(--muted);font-weight:600}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">decidehowtodecide.org</div>
+    <h1>Decide how to decide.</h1>
+    <p class="sub">Most decisions go wrong before anyone weighs the options — in <b>how</b> the decision gets made and <b>who</b> gets to make it. These are small, transparent helpers for that meta-decision. Pick the one that fits the choice in front of you.</p>
+  </header>
+
+  <div class="grid-label">The helpers</div>
+  <div class="cards">
+
+    <a class="helper" href="method-selector.html">
+      <span class="spine" style="background:var(--clay)"></span>
+      <div class="body">
+        <div class="kind"><span class="dot" style="background:var(--clay)"></span>Primary &middot; how to decide</div>
+        <h2>Decision-Method Selector</h2>
+        <p class="answers">Answers: <b>which decision-making method fits this decision?</b> &mdash; from Autocratic through Advice and Consent to Consensus &mdash; and which decision-rights tools (RACI, RAPID, DACI, DARE) fit it or quietly break it.</p>
+        <p class="desc">Tune a decision on seven dimensions &mdash; urgency, reversibility, predictability, interdependence, where the knowledge sits, agreement, and buy-in &mdash; and get a best-fitting method with reasons. The highest-order helper: use it first.</p>
+        <span class="cta">Open <span class="arr">&rarr;</span></span>
+      </div>
+    </a>
+
+    <a class="helper" href="agent-autonomy.html">
+      <span class="spine" style="background:var(--green)"></span>
+      <div class="body">
+        <div class="kind"><span class="dot" style="background:var(--green)"></span>Domain-specific &middot; automation &amp; AI</div>
+        <h2>Automation or Agent?</h2>
+        <p class="answers">Answers: <b>should this be a workflow, AI within a workflow, or an agent</b> &mdash; and how much freedom should that agent have?</p>
+        <p class="desc">The Agency Design Canvas. Describe the work, the value of independent action, the consequences of mistakes and the controls you have in place; get a suggested architecture, a permissible-autonomy ceiling and human-oversight guidance. A decision aid, not permission to deploy.</p>
+        <span class="cta">Open <span class="arr">&rarr;</span></span>
+      </div>
+    </a>
+
+    <div class="helper soon">
+      <span class="spine" style="background:var(--muted-2)"></span>
+      <div class="body">
+        <div class="kind"><span class="dot" style="background:var(--muted-2)"></span>More to come</div>
+        <h2>Another helper</h2>
+        <p class="desc">Other domain-specific decision helpers can slot in here as they are built &mdash; each one a single, transparent page in the same family.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="foot"><b>What these are.</b> Each helper is a self-contained, client-side page &mdash; no accounts, no tracking, and nothing you enter leaves your browser. They are structured reasoning aids built on published research and standards, not validated instruments or authorisation to act. Treat every recommendation as a prompt for judgement.</p>
+</div>
+</body>
+</html>
