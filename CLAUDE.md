@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A small hub of static, client-side "decision helpers" published at `decidehowtodecide.org`. Every deployable page lives under `site/`:
 
-- `site/index.html` — the **landing page** / menu that signposts the helpers.
+- `site/index.html` — the **landing page**: the "Hold Certainty Lightly / Life Is Full of Sliders" brand homepage (hero, manifesto, phrases, evidence, and a three-card helper grid signposting the helpers). It keeps its own richer cream/teal/rust palette rather than the shared tokens, so it does **not** link `assets/tokens.css`; it shares the site's IBM Plex type system (Plex Sans for display/body, Plex Mono for the uppercase technical labels). Cards 01 and 02 link to the two live helpers; card 03 is a future helper.
 - `site/method-selector.html` — the **Decision-Method Selector** (the primary, highest-order helper): recommends a decision-making method (Autocratic, Delegation, Consultative, Advice, Consent, Democratic, Consensus) from seven tunable dimensions of a decision.
 - `site/agent-autonomy.html` — the **Agency Design Canvas** (domain-specific helper): decides whether a task needs a workflow, AI-in-a-workflow, a constrained agent, or a higher-autonomy agent, and how much autonomy is defensible.
 - `site/assets/tokens.css` — the shared design tokens (`:root` custom properties) linked by all three pages.
 
-Each page keeps its own CSS and JS **inline** and links two external stylesheets only: Google Fonts (IBM Plex Sans / IBM Plex Mono) and `assets/tokens.css`. The pages share visual identity through `tokens.css`; everything else is per-page.
+Each page keeps its own CSS and JS **inline** and loads Google Fonts (IBM Plex Sans / IBM Plex Mono). The two **helper** pages also link `assets/tokens.css` and share the paper/clay/green palette through it; the **landing** page keeps its own cream/teal/rust brand palette inline and does not link `tokens.css`. The whole site shares the IBM Plex type system regardless.
 
 Non-deployable material lives outside `site/`: `docs/` (design rationale and specs — see `docs/agent-autonomy-DESIGN_CONTEXT.md` and `docs/agent-autonomy-SPEC.md`), `tests/`, `package.json`, `deploy.sh`. There is no bundler or framework; editing the HTML in `site/` *is* the development workflow.
 
