@@ -307,7 +307,7 @@ function progress(){
   return 100;
 }
 function stageText(){
-  if(current==="welcome") return "Start";
+  if(current==="welcome") return "";
   if(current==="reference") return "Reference";
   if(current.startsWith("qa:")) return "Part 1 · Find the type";
   if(current==="reveal") return "Type found";
