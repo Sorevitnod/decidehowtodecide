@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Automation or Agent? — Decision Helpers</title>
+<meta name="description" content="Decide whether a task needs ordinary automation, AI within a workflow, or an agent — and how much freedom that agent should have.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--ink);
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1190px;margin:0 auto;padding:clamp(16px,3vw,40px)}
+
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    text-decoration:none;margin-bottom:18px;transition:color .15s ease}
+  .backlink:hover{color:var(--ink)}
+  .backlink:focus-visible{outline:2px solid var(--slate);outline-offset:3px}
+  .backlink span{font-size:14px;line-height:0}
+
+  header{margin-bottom:6px}
+  header .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  header .eyebrow::after{content:"";height:1px;flex:1;background:var(--line)}
+  header h1{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:600;font-size:clamp(26px,4.4vw,40px);
+    line-height:1.08;letter-spacing:-.01em;color:var(--ink);max-width:24ch;margin:0}
+  header .header-lead{margin:12px 0 0;color:var(--slate);font-size:16px;max-width:74ch;line-height:1.5}
+
+  main{margin:22px 0 0}
+  .layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(310px,.82fr);gap:20px;align-items:start}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:23px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 17px;font-size:14px}
+  .section{border-top:1px solid var(--line);padding-top:19px;margin-top:20px}
+  .section h3{margin:0 0 3px;font-size:16px;font-weight:600}
+  .section>p{margin:0 0 13px;color:var(--muted);font-size:13px}
+
+  .purpose{margin-bottom:20px;border-left:4px solid var(--clay)}
+  .purpose h2{font-size:clamp(19px,2.5vw,23px);margin:0 0 9px}
+  .purpose p{max-width:100ch;margin:8px 0;line-height:1.6;color:var(--slate)}
+  .purpose strong{color:var(--ink);font-weight:600}
+
+  .item{padding:13px 0;border-bottom:1px solid var(--line-soft)}
+  .item:last-child{border-bottom:0}
+  .item label{display:flex;justify-content:space-between;gap:10px;font-weight:600;font-size:14px}
+  .item small{color:var(--muted);display:block;margin:5px 0 9px;line-height:1.4}
+  .value{font-family:"IBM Plex Mono",monospace;background:var(--fit-bg);color:var(--green);border-radius:30px;
+    padding:2px 10px;white-space:nowrap;font-size:12px;font-variant-numeric:tabular-nums}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;
+    background:linear-gradient(90deg,var(--clay),#C9CDD3 52%,var(--green));outline:none;cursor:pointer;margin:6px 0 2px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;
+    border-radius:50%;background:var(--panel);border:2px solid var(--slate);
+    box-shadow:0 1px 4px rgba(21,30,39,.28);cursor:pointer;transition:transform .12s ease}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--panel);
+    border:2px solid var(--slate);box-shadow:0 1px 4px rgba(21,30,39,.28);cursor:pointer}
+  input[type=range]:focus-visible{outline:2px solid var(--slate);outline-offset:4px}
+  .ends{display:flex;justify-content:space-between;color:var(--muted);font-size:11.5px;gap:12px;margin-top:7px}
+
+  .result{position:sticky;top:15px}
+  .pill{font-family:"IBM Plex Mono",monospace;display:inline-block;border-radius:6px;padding:4px 9px;
+    background:var(--fit-bg);color:var(--green);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .result h2{font-size:28px;line-height:1.12;margin:12px 0;font-weight:600;letter-spacing:-.01em}
+  .lead{font-size:16px;color:var(--slate)}
+  .meter-title{display:flex;justify-content:space-between;gap:6px;font-weight:600;margin-top:17px;font-size:13px}
+  .meter-title span:last-child{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-weight:500}
+  .track{height:9px;border-radius:12px;background:#EDF0F3;margin:7px 0 4px;overflow:hidden}
+  .fill{height:100%;width:0;background:var(--green);border-radius:12px;transition:width .25s cubic-bezier(.4,0,.2,1)}
+  .fill.risk{background:var(--clay)}
+
+  .reason{background:#F5F7F9;padding:15px;border-radius:10px;margin-top:17px;border:1px solid var(--line-soft)}
+  .reason h3{font-size:15px;margin:0 0 5px;font-weight:600}
+  .reason ul{margin:0;padding-left:20px}
+  .reason li{margin:7px 0;color:var(--slate);font-size:13.5px}
+
+  .warning{border-left:4px solid var(--amber);background:var(--partial-bg);padding:13px 15px;margin-top:14px;
+    border-radius:8px;font-size:13.5px;color:var(--slate)}
+  .warning strong{display:block;color:var(--ink)}
+
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0 6px}
+  .flow div{background:#F3F5F8;color:var(--muted);border-radius:8px;padding:9px 5px;text-align:center;font-size:11px;font-weight:600}
+  .flow div.on{background:var(--fit-bg);color:var(--green);outline:2px solid var(--green)}
+
+  .buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  button{font-family:inherit;background:var(--ink);border:1px solid var(--ink);border-radius:8px;padding:10px 14px;
+    color:#fff;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s ease}
+  button:hover{background:var(--slate);border-color:var(--slate)}
+  button.secondary{background:var(--panel);color:var(--slate);border:1px solid var(--line)}
+  button.secondary:hover{border-color:var(--slate);color:var(--ink);background:var(--panel)}
+  button:focus-visible{outline:2px solid var(--slate);outline-offset:2px}
+
+  footer{max-width:1190px;margin:0 auto;padding:0 clamp(16px,3vw,40px) 34px;color:var(--muted);font-size:12px;line-height:1.6}
+
+  details{margin-top:18px}
+  summary{cursor:pointer;font-weight:600}
+  .gloss{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
+  .gloss div{border:1px solid var(--line);border-radius:9px;padding:12px;font-size:13px;color:var(--slate);background:#FBFCFD}
+  .gloss b{display:block;margin-bottom:3px;color:var(--ink)}
+  .toggle{display:flex;gap:10px;align-items:flex-start;margin-top:15px;font-size:13.5px;color:var(--slate)}
+  .toggle input{margin-top:5px}
+
+  svg{max-width:100%;height:auto}
+  .axis-label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:var(--muted)}
+  .dot{fill:var(--green);stroke:var(--panel);stroke-width:3}
+  .plotbox{fill:#F5F7F9;stroke:var(--line)}
+
+  @media(max-width:820px){.layout{grid-template-columns:1fr}.result{position:static}.gloss{grid-template-columns:1fr}}
+  @media print{body{background:#fff}.result{position:static}button{display:none}.card{box-shadow:none;break-inside:avoid}.backlink{display:none}}
+
+  .explain{margin-top:20px}
+  .explain details{border:1px solid var(--line);border-radius:12px;margin:12px 0;background:var(--panel);overflow:hidden}
+  .explain summary{padding:16px 18px;cursor:pointer;font-size:15px;font-weight:600;list-style-position:inside;background:#F6F8FA;color:var(--slate)}
+  .explain details[open] summary{border-bottom:1px solid var(--line);background:var(--fit-bg);color:var(--ink)}
+  .explain .inside{padding:16px 20px 20px;max-width:100ch}
+  .explain .inside h3{font-size:16px;margin:18px 0 5px;font-weight:600}
+  .explain .inside h3:first-child{margin-top:0}
+  .explain p,.explain li{line-height:1.65;color:var(--slate)}
+  .explain li{margin:7px 0}
+  .explain a{color:var(--green);text-underline-offset:2px;overflow-wrap:anywhere;font-weight:500}
+  .explain a:focus-visible{outline:2px solid var(--green)}
+  .explain .notice{padding:13px 16px;border-left:4px solid var(--amber);background:var(--partial-bg);border-radius:7px}
+  .explain .notice strong{color:var(--ink)}
+  .explain .tag{font-family:"IBM Plex Mono",monospace;display:inline-block;font-size:10px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;background:var(--fit-bg);color:var(--green);padding:3px 9px;border-radius:6px;margin-left:6px}
+  @media print{.explain details .inside{display:block!important}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<a class="backlink" href="./"><span>&larr;</span> Decision helpers</a>
+<header><p class="eyebrow">Agency Design Canvas</p><h1>Should this be a workflow or an AI agent?</h1><p class="header-lead">Decide whether a task needs ordinary automation, AI within a workflow, or an agent&mdash;and how much freedom that agent should have.</p></header>
+<main><section class="purpose card" aria-labelledby="purpose-title">
+<h2 id="purpose-title">What does this framework help you decide?</h2>
+<p><strong>Choose the simplest approach that can do the job effectively.</strong> Answer a few questions about the work, the value of independent decisions, the consequences of mistakes and the controls you have in place.</p>
+<p>You'll get a suggested approach, a level of autonomy, human-oversight guidance and an explanation of the trade-offs. <strong>It's a decision aid, not permission to deploy.</strong></p>
+</section><div class="layout">
+<section class="card"><h2>Describe the work</h2><p class="sub">Move the sliders to reflect the actual task, not the technology you want to deploy. All questions use a 0–4 scale.</p>
+<div class="section"><h3>1 · Is agency actually needed?</h3><p>Higher values increase the potential value of independent planning and action.</p><div id="need"></div></div>
+<div class="section"><h3>2 · Is an AI model needed?</h3><p>Variable or unstructured inputs can justify AI even when an agent is unnecessary.</p><div id="ai"></div></div>
+<div class="section"><h3>3 · How much authority is safe to delegate?</h3><p>These questions constrain recommended autonomy; they do not create a need for an agent.</p><div id="control"></div></div>
+<div class="section"><h3>4 · What additional value does autonomy deliver?</h3><p>Assess incremental benefit over the best feasible workflow, not the value of the task overall.</p><div id="value"></div></div>
+<div class="section"><h3>5 · How mature are the governing controls?</h3><p>Score controls that are implemented and evidenced, rather than planned capabilities.</p><div id="maturity"></div></div>
+<div class="section"><h3>6 · Human oversight preference</h3>
+<p>Choose an operating pattern to test against the assessment. This preference never overrides required approvals or foundational controls.</p>
+<label for="oversightMode" style="display:block;font-weight:600;margin-bottom:8px">Proposed oversight model</label>
+<select id="oversightMode" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink);font:inherit">
+<option value="auto">Recommend based on assessment</option>
+<option value="hitl">Human-in-the-loop — approval before specified actions</option>
+<option value="hotl">Human-on-the-loop — supervise and intervene</option>
+<option value="hootl">Human-out-of-the-loop — bounded unattended execution</option>
+</select>
+<div class="section"><h3>7 · Non-negotiable controls</h3>
+<label class="toggle"><input id="approval" type="checkbox"> <span>Policy or regulation requires human approval before consequential actions.</span></label>
+<label class="toggle"><input id="unverified" type="checkbox"> <span>Required permissions, audit trail, rollback or monitoring are not yet implemented.</span></label>
+</div></section>
+<aside class="card result" aria-live="polite"><span class="pill">Suggested architecture</span><h2 id="rec">—</h2><p class="lead" id="summary"></p>
+<div class="flow"><div id="step0">Workflow</div><div id="step1">AI + workflow</div><div id="step2">Constrained agent</div><div id="step3">Higher autonomy</div></div>
+<div class="meter-title"><span>Need for agency</span><span id="needScore"></span></div><div class="track"><div class="fill" id="needFill"></div></div>
+<div class="meter-title"><span>Need for AI interpretation</span><span id="aiScore"></span></div><div class="track"><div class="fill" id="aiFill"></div></div>
+<div class="meter-title"><span>Delegation concern</span><span id="riskScore"></span></div><div class="track"><div class="fill risk" id="riskFill"></div></div>
+<div class="meter-title"><span>Incremental value of autonomy</span><span id="valueScore"></span></div><div class="track"><div class="fill" id="valueFill"></div></div>
+<div class="meter-title"><span>Control maturity</span><span id="maturityScore"></span></div><div class="track"><div class="fill" id="maturityFill"></div></div>
+<div class="meter-title"><span>Permissible autonomy (illustrative ceiling)</span><span id="permissibleScore"></span></div><div class="track"><div class="fill" id="permissibleFill"></div></div>
+<div class="reason"><h3>Why this result?</h3><ul id="why"></ul></div>
+<div class="warning" id="caution"></div>
+<div class="section"><h3>How to read the result</h3><svg viewBox="0 0 340 258" role="img" aria-label="Plot of agency need against delegation concern">
+<rect class="plotbox" x="43" y="14" width="278" height="198" rx="7"/><path d="M182 14V212 M43 113H321" stroke="#C9CDD3" stroke-dasharray="5 5"/>
+<text x="113" y="37" text-anchor="middle" class="axis-label">Constrain</text><text x="251" y="37" text-anchor="middle" class="axis-label">High governance</text>
+<text x="113" y="194" text-anchor="middle" class="axis-label">Workflow-first</text><text x="251" y="194" text-anchor="middle" class="axis-label">Agency may add value</text>
+<text x="8" y="15" class="axis-label">High</text><text x="10" y="210" class="axis-label">Low</text>
+<text x="182" y="249" class="axis-label" text-anchor="middle">Need for agency →</text>
+<circle id="plot" class="dot" cx="43" cy="212" r="8"/><text x="44" y="9" class="axis-label">Delegation concern ↑</text></svg>
+<p class="sub">The diagram is indicative, not a safety certification or an automatic permission to deploy.</p></div>
+<div class="reason" aria-live="polite"><h3>Human oversight design</h3><p id="oversight" style="margin:0"></p></div>
+<div class="buttons"><button type="button" onclick="window.print()">Print / save PDF</button><button type="button" class="secondary" id="reset">Reset</button><button type="button" class="secondary" id="copy">Copy assessment</button></div><p id="copied" class="sub" role="status"></p></aside></div>
+<section class="card" style="margin-top:20px"><h2>Shared vocabulary</h2><p class="sub">Precise terms help avoid treating uncertainty as though it were the same thing as autonomy.</p><div class="gloss">
+<div><b>Deterministic</b>Given the same input and complete system state, produces the same output.</div>
+<div><b>Non-deterministic</b>The same apparent inputs may lead to different outcomes; causes may include randomness, concurrency or hidden state.</div>
+<div><b>Probabilistic</b>Represents or reasons about uncertainty using probabilities. A probabilistic model need not sample randomly at inference.</div>
+<div><b>Stochastic</b>Includes a random process or random sampling. Probabilistic and stochastic overlap; they are not sequential autonomy levels.</div>
+<div><b>Agency</b>Ability to select and take actions in pursuit of an objective.</div>
+<div><b>Autonomy</b>Degree of discretion and independence in planning and acting without human approval.</div>
+<div><b>Workflow automation</b>Orchestration along predefined steps, conditions and permissions.</div>
+<div><b>Constrained agent</b>Goal-directed system with explicitly bounded tools, permissions, scope and checkpoints.</div>
+<div><b>Required autonomy</b>Degree of independent action genuinely needed to deliver task value.</div>
+<div><b>Permissible autonomy</b>Degree of independence allowed by risk appetite and evidenced controls.</div>
+<div><b>Justified autonomy</b>Autonomy whose incremental value warrants its cost and residual risk.</div>
+<div><b>Risk-adjusted autonomy</b>Delegation bounded by task impact, reversibility, scope, control maturity and benefits.</div>
+</div><details><summary>Scoring and decision rules (fully transparent)</summary><p>Agency need is the average of four task questions; AI need averages two interpretation questions. Delegation concern averages impact, inverted reversibility and scope. Incremental value averages two value questions; evidenced control maturity averages three maturity questions. The indicative permissible-autonomy ceiling is min(4, 4 − delegation concern + (control maturity − 2) × 0.75), floored at 0; mandatory approval caps the ceiling at 2, and missing foundational controls caps it at 1. This is a discussion aid, not a quantitative risk model or approval. Low agency need (&lt;1.6) favours workflow or AI-assisted workflow. Higher agency need can justify an agent only if incremental autonomy value is at least 1.8 and permissible autonomy is at least 1.6; otherwise favour a workflow or model-assisted workflow until controls improve. High autonomy requires agency need ≥2.8, incremental value ≥2.8, and a permissible-autonomy ceiling ≥2.8. Where need exceeds the ceiling, the output explicitly flags an autonomy–assurance gap. Thresholds are illustrative, not validated risk scoring or deployment authorization.</p></details></section>
+
+
+<section class="card explain" aria-labelledby="oversight-title">
+<h2 id="oversight-title">Human oversight: a separate design dimension</h2>
+<p class="sub">The four architectural options do not prescribe a single human-oversight pattern. Separate who plans from who authorises actions, monitors execution and owns the outcome.</p>
+<div class="gloss">
+<div><b>Human-in-the-loop (HITL)</b>A person must review or authorise a defined decision or action <em>before</em> it takes effect. May be required at every action or only at consequential checkpoints.</div>
+<div><b>Human-on-the-loop (HOTL)</b>System acts within delegated boundaries; a human supervises and can intervene, stop or override its operation.</div>
+<div><b>Human-out-of-the-loop (HOOTL)</b>No human approval or real-time supervision is needed for each execution. The system still requires accountable ownership, limits, logs and periodic review.</div>
+<div><b>Human-before/after-the-loop</b>People set goals, rules and permissions before execution and inspect outcomes or exceptions afterwards. These are useful complements, not substitutes for required pre-action approval.</div>
+</div>
+<table style="width:100%;border-collapse:collapse;margin-top:19px;font-size:13px">
+<thead><tr><th style="text-align:left;padding:9px;border-bottom:2px solid var(--line)">Architecture</th><th style="text-align:left;padding:9px;border-bottom:2px solid var(--line)">Illustrative oversight pattern</th></tr></thead>
+<tbody>
+<tr><td style="padding:10px;border-bottom:1px solid var(--line)"><b>Workflow automation</b></td><td style="padding:10px;border-bottom:1px solid var(--line)">Often unattended execution plus exception handling. May include a mandatory human approval step.</td></tr>
+<tr><td style="padding:10px;border-bottom:1px solid var(--line)"><b>AI-assisted workflow</b></td><td style="padding:10px;border-bottom:1px solid var(--line)">Human review of uncertain AI outputs or high-impact downstream actions; routine, low-risk inference may be automatic.</td></tr>
+<tr><td style="padding:10px;border-bottom:1px solid var(--line)"><b>Constrained agent</b></td><td style="padding:10px;border-bottom:1px solid var(--line)">Agent plans within limits; humans authorise specified actions, exceptions, or changes of scope. Monitoring and stop mechanisms support oversight between gates.</td></tr>
+<tr><td style="padding:10px"><b>Higher-autonomy agent</b></td><td style="padding:10px">Bounded unattended execution, live monitoring, escalation triggers, interruptibility and post-action audit; approval remains mandatory wherever policy requires it.</td></tr>
+</tbody></table>
+<p class="notice"><b>Critical distinction:</b> human review is meaningful only if reviewers have enough information, time, competence and authority to challenge, change, or halt the action. Adding a checkbox or approval button is not, by itself, a risk control.</p>
+</section>
+<section class="card explain" aria-labelledby="evidence-title">
+<h2 id="evidence-title">Behind the model: evidence, misuse and sources</h2>
+<p class="sub">An evidence-informed architecture conversation, not a scientifically validated agent-selection test. Expand any section to inspect the reasoning and follow the original references.</p>
+
+<details><summary>The science behind it <span class="tag">Research lineage</span></summary><div class="inside">
+<h3>1. Levels of automation are a design choice</h3>
+<p>Parasuraman, Sheridan and Wickens (2000) distinguish information acquisition, information analysis, decision/action selection and action implementation. They argue that each function can receive a different level of automation and should be evaluated for human performance consequences. This supports asking <em>what</em> an AI system may decide or execute, rather than applying a single “agentic / not agentic” label to the whole system. <a href="https://doi.org/10.1109/3468.844354" target="_blank" rel="noopener noreferrer">Original research ↗</a></p>
+<h3>2. Agency and uncertainty are separate dimensions</h3>
+<p>Deterministic behaviour concerns repeatability; probabilistic models express uncertainty; stochastic processes involve randomness. None, by itself, tells us who can select actions or approve execution. The distinction in this canvas is a conceptual architecture model, not a taxonomy claimed to be prescribed by NIST or ISO.</p>
+<h3>3. Governance changes permissible delegation</h3>
+<p>The NIST AI Risk Management Framework organises risk work into Govern, Map, Measure and Manage, with activities throughout the system lifecycle. Its Generative AI Profile extends that work to generative-AI-specific risks. ISO/IEC 42001 specifies requirements for an organisational AI management system. These sources support the principle that deployment authority should depend on context, risk assessment, evidence and continuing control operation—not model capability alone. <a href="https://airc.nist.gov/airmf-resources/airmf/5-sec-core/" target="_blank" rel="noopener noreferrer">NIST AI RMF ↗</a> · <a href="https://doi.org/10.6028/NIST.AI.600-1" target="_blank" rel="noopener noreferrer">NIST GenAI Profile ↗</a> · <a href="https://www.iso.org/standard/42001" target="_blank" rel="noopener noreferrer">ISO/IEC 42001 ↗</a></p>
+<h3>4. More actions introduce agent-specific failure modes</h3>
+<p>OWASP's Top 10 for Agentic Applications (2026) documents threats associated with agents that plan and act through tools. NIST has also studied agent hijacking through indirect prompt injection. These are reasons to evaluate permissions, tool boundaries, monitoring, approvals and recovery separately from the quality of an agent's prose or predictions. <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP ↗</a> · <a href="https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" target="_blank" rel="noopener noreferrer">NIST agent hijacking ↗</a></p>
+<h3>5. Human approval is not the same as effective human oversight</h3>
+<p>Human-factors research documents automation bias: people may over-rely on automated advice and fail to notice errors. A nominal human-in-the-loop checkbox cannot substitute for meaningful review time, information, authority and the ability to interrupt or reverse an action. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3240751/" target="_blank" rel="noopener noreferrer">Automation-bias review ↗</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7651899/" target="_blank" rel="noopener noreferrer">Verification-complexity review ↗</a></p>
+</div></details>
+
+<details><summary>What this instrument is — and is not <span class="tag">Methodology</span></summary><div class="inside">
+<p>This is a transparent, qualitative <strong>decision heuristic</strong>. Its sliders operationalise four architectural distinctions: predictability, uncertainty/AI need, agency need and risk-adjusted autonomy. It compares <strong>required autonomy</strong> with an illustrative <strong>permissible-autonomy ceiling</strong>, and asks whether incremental value makes the additional delegation worth discussing.</p>
+<p class="notice"><strong>Evidence boundary:</strong> the underlying principles are supported by research and standards; this canvas's particular questions, weights, thresholds, formula and four recommendation labels are original design choices. They have <strong>not</strong> been calibrated, independently validated, certified, or demonstrated to predict incidents or financial outcomes. A “3 / 4” is an ordinal discussion input, not a 75% probability, a risk rating or a control-effectiveness measurement.</p>
+<p>Changing an answer can change the suggested architecture. Treat that as sensitivity analysis rather than precision. For consequential cases, compare multiple candidate architectures, collect evidence, document assumptions and require the organisation's normal architecture, risk and change approvals.</p>
+<p>See “Scoring and decision rules (fully transparent)” above for the actual formula and cut-offs used by this version.</p>
+</div></details>
+
+<details><summary>How this can be misused <span class="tag">Failure modes</span></summary><div class="inside">
+<ul>
+<li><strong>Score laundering:</strong> presenting a heuristic recommendation as “science says we must deploy an agent.” Countermeasure: record alternatives, assumptions, dissent and the human decision owner.</li>
+<li><strong>Slider gaming:</strong> overstating task complexity or control maturity to get a preferred result. Countermeasure: attach evidence, use a cross-functional review and preserve the original assessment.</li>
+<li><strong>Equating controls on paper with operating controls:</strong> a policy or checkbox does not establish tested containment, identity, recovery or monitoring. Countermeasure: require demonstrations, evaluations and named operational owners.</li>
+<li><strong>Decorative human approval:</strong> the reviewer cannot realistically verify the output, challenge it or stop execution. Countermeasure: design actionable review, appropriate information, time and override capability.</li>
+<li><strong>Conflating inference with agency:</strong> a probabilistic classifier is not necessarily an agent, and constraining an agent's tools does not make its model deterministic. Countermeasure: map inference, planning, decision rights and action authority separately.</li>
+<li><strong>False comfort from deterministic workflows:</strong> predefined steps can still implement flawed rules, act on erroneous AI output or have excessive permissions. Countermeasure: assess actual failure impact for <em>every</em> option.</li>
+<li><strong>Hiding residual risk:</strong> a high control-maturity slider must not cancel a disallowed action, legal duty or unacceptable consequence. Countermeasure: use independent hard gates and organisational risk acceptance; never allow a high average score to override them.</li>
+<li><strong>Missing value and opportunity cost:</strong> choosing the least autonomous option by default can prevent the system from solving the problem. Countermeasure: compare measurable outcomes of workflow, AI-assisted workflow and bounded agent trials.</li>
+</ul>
+</div></details>
+
+<details><summary>External sources <span class="tag">Follow the evidence</span></summary><div class="inside">
+<ol>
+<li>Parasuraman, R., Sheridan, T. B. &amp; Wickens, C. D. (2000). <em>A model for types and levels of human interaction with automation.</em> IEEE Transactions on Systems, Man, and Cybernetics A, 30(3), 286–297. <a href="https://doi.org/10.1109/3468.844354" target="_blank" rel="noopener noreferrer">DOI ↗</a> — framework for levels and functions of automation.</li>
+<li>NIST (2023). <em>Artificial Intelligence Risk Management Framework 1.0.</em> <a href="https://doi.org/10.6028/NIST.AI.100-1" target="_blank" rel="noopener noreferrer">Official publication ↗</a> — govern, map, measure and manage.</li>
+<li>NIST (2024). <em>Generative AI Profile, NIST AI 600-1.</em> <a href="https://doi.org/10.6028/NIST.AI.600-1" target="_blank" rel="noopener noreferrer">Official publication ↗</a> — generative-AI risk considerations.</li>
+<li>ISO/IEC (2023). <em>ISO/IEC 42001: Artificial intelligence management system.</em> <a href="https://www.iso.org/standard/42001" target="_blank" rel="noopener noreferrer">Official standard page ↗</a> — organisational management-system requirements (full standard may require purchase).</li>
+<li>OWASP (2026). <em>Top 10 for Agentic Applications.</em> <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">Official project ↗</a> — agent-specific security risks and guidance.</li>
+<li>NIST (2025). <em>Strengthening AI Agent Hijacking Evaluations.</em> <a href="https://www.nist.gov/news-events/news/2025/01/technical-blog-strengthening-ai-agent-hijacking-evaluations" target="_blank" rel="noopener noreferrer">Official research blog ↗</a> — indirect prompt injection and agent action risk.</li>
+<li>Goddard, K., Roudsari, A. &amp; Wyatt, J. C. (2012). <em>Automation bias: a systematic review of frequency, effect mediators, and mitigators.</em> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3240751/" target="_blank" rel="noopener noreferrer">Open access ↗</a> — human reliance on automated advice.</li>
+<li>Lyell, D. &amp; Coiera, E. (2017). <em>Automation bias and verification complexity: a systematic review.</em> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7651899/" target="_blank" rel="noopener noreferrer">Open access ↗</a> — challenges of verifying automated outputs.</li>
+<li><a href="method-selector.html">Decision-Method Selector</a> — the companion helper for choosing <em>how</em> a decision should be made; shares this site's transparent “science / misuse / sources” disclosure.</li>
+</ol>
+</div></details>
+</section>
+</main><footer>Decision support, not deployment authorization. Validate the output against institutional policies, security architecture, model evaluations, operational controls and human accountability. High risk does not automatically mean “no AI”; it means permissions and oversight must be justified.</footer>
+</div>
+<script>
+const groups={
+need:[
+{id:'path',label:'How predefined is the path to the outcome?',desc:'Can people specify the steps in advance?',low:'Fully prescribed',high:'Must discover/replan',default:1},
+{id:'choices',label:'How much discretion is needed?',desc:'Must the system choose between materially different actions?',low:'No discretion',high:'Substantial discretion',default:1},
+{id:'changes',label:'How dynamic is the environment?',desc:'Will new information require revising the plan?',low:'Stable',high:'Changes frequently',default:1},
+{id:'multi',label:'How much goal-directed coordination is needed?',desc:'Must the system organise multiple tools or steps in response to results?',low:'One fixed step',high:'Open-ended multi-step',default:1}],
+ai:[
+{id:'input',label:'How unstructured or ambiguous are the inputs?',desc:'Documents, natural language and images versus well-defined fields.',low:'Structured and exact',high:'Ambiguous/unstructured',default:1},
+{id:'judgment',label:'How much inference or interpretation is required?',desc:'Could ordinary rules handle the same information reliably?',low:'Rules suffice',high:'Inference is essential',default:1}],
+control:[
+{id:'impact',label:'What is the impact of a wrong action?',desc:'Consider customer, operational, financial, privacy and security consequences.',low:'Negligible',high:'Severe',default:2},
+{id:'reverse',label:'How easy is it to undo a wrong action?',desc:'Reversibility lowers the cost of delegated experimentation.',low:'Irreversible',high:'Easily reversible',default:2},
+{id:'scope',label:'How broad would the agent’s permissions be?',desc:'Assess permitted tools, data, transactions and affected systems.',low:'Read-only/narrow',high:'Broad/write access',default:2}
+],
+value:[
+{id:'benefit',label:'How much additional value does independent action unlock?',desc:'Compare to a realistic AI-assisted workflow, including cost and reliability.',low:'Little incremental value',high:'Transformational value',default:2},
+{id:'delay',label:'How costly are human checkpoints or a prescribed path?',desc:'Consider delays, scalability and missed opportunities, not a wish to remove oversight.',low:'Negligible cost',high:'Material lost value',default:2}
+],
+maturity:[
+{id:'identity',label:'How mature are identity and delegated authorisation controls?',desc:'Scoped identity, least privilege, policy enforcement and revocation are tested.',low:'Absent/untested',high:'Evidenced and effective',default:1},
+{id:'monitor',label:'How mature are monitoring, audit and evaluation?',desc:'Actions can be traced, evaluated and investigated, with actionable alerting.',low:'Absent/untested',high:'Evidenced and effective',default:1},
+{id:'recover',label:'How mature are limits, intervention and recovery?',desc:'Transaction limits, approval gates, kill switch and compensating actions are tested.',low:'Absent/untested',high:'Evidenced and effective',default:1}
+]};
+const $=id=>document.getElementById(id);
+for(const [group,questions] of Object.entries(groups)){
+for(const q of questions){
+let div=document.createElement('div');div.className='item';
+div.innerHTML=`<label for="${q.id}">${q.label}<span class="value" id="${q.id}Val">${q.default} / 4</span></label><small>${q.desc}</small><input type="range" id="${q.id}" min="0" max="4" value="${q.default}" step="1" aria-label="${q.label}"><div class="ends"><span>${q.low}</span><span>${q.high}</span></div>`;
+$(group).append(div);$(q.id).addEventListener('input',update);
+}}
+$('approval').addEventListener('change',update);$('unverified').addEventListener('change',update);$('oversightMode').addEventListener('change',update);
+const get=id=>Number($(id).value),avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
+let last={};
+function update(){
+for(const qs of Object.values(groups))for(const q of qs)$(q.id+'Val').textContent=get(q.id)+' / 4';
+const n=avg(groups.need.map(q=>get(q.id))), a=avg(groups.ai.map(q=>get(q.id)));
+const r=avg([get('impact'),4-get('reverse'),get('scope')]);
+const v=avg(groups.value.map(q=>get(q.id))), m=avg(groups.maturity.map(q=>get(q.id)));
+const approval=$('approval').checked, missing=$('unverified').checked;
+const ceiling=Math.max(0,Math.min(4,4-r+(m-2)*.75,approval?2:4,missing?1:4));
+const gap=Math.max(0,n-ceiling);
+let tier,rec,summary,why=[],caution=[];
+if(n<1.6){
+ if(a>=1.8){tier=1;rec='AI-assisted workflow';summary='Keep the path and action authority prescribed; use AI for interpretation or prediction.';why.push('Independent planning is not required to deliver the task.','Inference may still add value within predictable orchestration.');}
+ else{tier=0;rec='Workflow automation';summary='Prefer predefined rules, scripts and orchestration rather than introducing an autonomous agent.';why.push('Most actions and choices can be specified in advance.','No strong AI interpretation need has been identified.');}
+}else if(v<1.8 || ceiling<1.6){
+ tier=a>=1.8?1:0;rec=a>=1.8?'AI-assisted workflow — defer delegation':'Workflow automation — defer delegation';
+ summary='Preserve task value with constrained execution; revisit autonomy only if incremental value or control assurance improves.';
+ why.push(v<1.8?'The extra value from independent action does not yet justify delegation.':'Task complexity suggests agency could help, but the current permissible-autonomy ceiling is too low.','AI interpretation can be retained without delegating execution authority.');
+}else if(n>=2.8 && v>=2.8 && ceiling>=2.8 && !approval && !missing){
+ tier=3;rec='Higher-autonomy agent candidate';summary='Broader independent planning may be justified within tested permissions, monitoring, intervention and recovery.';
+ why.push('The task requires substantial adaptation and autonomy adds material incremental value.','Indicative permissible autonomy supports broader delegation, subject to formal review.');
+}else{
+ tier=2;rec='Constrained agent + governed execution';summary='Use bounded planning and tools, with approvals and permissions matched to the permissible autonomy ceiling.';
+ why.push('The task has a substantive agency requirement and meaningful incremental value.','Control maturity and consequences limit how much authority should be delegated.');
+}
+if(gap>0.35)why.push('Autonomy–assurance gap: the task calls for more independence than current risk and control maturity support. Close the controls gap or redesign around less delegation.');
+if(n>=1.6&&a<1.8)why.push('Consider whether a deterministic or rule-based planner could provide coordination without a generative AI model.');
+if(approval)caution.push('Mandatory human approval: enforce approval before consequential actions, regardless of the score.');
+if(missing)caution.push('Missing foundational controls: do not deploy ungoverned action-taking autonomy. Implement and validate the relevant controls first.');
+if(r>=2.5)caution.push('High delegation concern: reduce permissions and blast radius; use transaction limits, dry runs and appropriate approval.');
+if(m<2)caution.push('Control maturity is low: an agent capability is not permission to delegate decisions or actions.');
+const oversightMode=$('oversightMode').value;
+if(oversightMode==='hootl' && (approval || missing || r>=2.5 || m<2)){
+ caution.push('Oversight conflict: unattended execution is not supported by the current approval requirements, risk exposure or unverified/immature controls. Do not treat the selected preference as permission.');
+}
+if(oversightMode==='hotl' && approval){
+ caution.push('Oversight conflict: supervision alone does not satisfy mandatory approval before consequential actions.');
+}
+if(!caution.length)caution.push('Indicative design guidance only. Validate risk appetite, residual risk, evaluations and policies before any deployment.');
+let oversight;
+if(approval){
+ oversight='Human-in-the-loop is a mandatory pre-action gate for consequential actions. Other low-risk steps may run unattended if policy permits; preserve audit, escalation and interruption.';
+}else if(missing){
+ oversight='Do not delegate consequential actions yet. Use human approval and supervised execution while foundational controls are implemented and tested.';
+}else if(tier===0){
+ oversight='Usually unattended execution with human ownership, exception handling and periodic review. Add explicit pre-action approval where impact or policy warrants it.';
+}else if(tier===1){
+ oversight=r>=2.5?'Use human review before AI-driven consequential action; monitor quality, route low-confidence outputs to review, and record decisions.':'Automate low-risk inference within the workflow; introduce human review for uncertainty, exceptions, or consequential actions.';
+}else if(tier===2){
+ oversight='Use human approval at defined consequential tool calls or scope changes, plus monitoring, bounded permissions, escalation and a stop mechanism.';
+}else{
+ oversight='Allow bounded unattended execution, with active monitoring, escalation thresholds, emergency interruption and post-action audit; retain pre-action approval for any policy-mandated decisions.';
+}
+
+$('rec').textContent=rec;$('summary').textContent=summary;
+if(oversightMode!=='auto'){
+ const names={hitl:'Human-in-the-loop',hotl:'Human-on-the-loop',hootl:'Human-out-of-the-loop'};
+ const conflict=(oversightMode==='hootl'&&(approval||missing||r>=2.5||m<2))||(oversightMode==='hotl'&&approval);
+ oversight+=' Selected operating preference: '+names[oversightMode]+'. '+(conflict?'This preference conflicts with an approval obligation or assurance constraint; retain the stricter controls.':'Apply this pattern only to the actions whose impact and authorisation justify it.');
+}
+$('oversight').textContent=oversight;
+for(let i=0;i<4;i++)$('step'+i).classList.toggle('on',i===tier);
+for(const [prefix,val] of [['need',n],['ai',a],['risk',r],['value',v],['maturity',m],['permissible',ceiling]]){$(prefix+'Score').textContent=val.toFixed(1)+' / 4';$(prefix+'Fill').style.width=(val/4*100)+'%';}
+$('why').replaceChildren(...why.map(w=>{let li=document.createElement('li');li.textContent=w;return li}));
+$('caution').replaceChildren(...caution.map((w,i)=>{let p=document.createElement('p');p.style.margin=i?'8px 0 0':'0';p.textContent=w;return p}));
+$('plot').setAttribute('cx',(43+n/4*278).toFixed(1));$('plot').setAttribute('cy',(212-r/4*198).toFixed(1));
+last={selectedOversightMode:oversightMode,humanOversight:oversight,recommendation:rec,agencyNeed:n.toFixed(1),aiNeed:a.toFixed(1),delegationConcern:r.toFixed(1),incrementalAutonomyValue:v.toFixed(1),controlMaturity:m.toFixed(1),permissibleAutonomy:ceiling.toFixed(1),autonomyAssuranceGap:gap.toFixed(1),mandatoryApproval:approval,missingControls:missing,answers:Object.fromEntries(Object.values(groups).flat().map(q=>[q.label,get(q.id)])),reasoning:why,controls:caution};
+}
+$('reset').onclick=()=>{for(const qs of Object.values(groups))for(const q of qs)$(q.id).value=q.default;$('approval').checked=false;$('unverified').checked=false;$('oversightMode').value='auto';$('copied').textContent='';update()};
+$('copy').onclick=async()=>{let txt=JSON.stringify(last,null,2);try{await navigator.clipboard.writeText(txt);$('copied').textContent='Assessment copied as JSON.'}catch(e){$('copied').textContent='Copy unavailable in this browser. Use Print / save PDF.'}};
+update();
+</script>
+</body></html>

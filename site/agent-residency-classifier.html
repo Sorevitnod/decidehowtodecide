@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Classify an AI agent by where it runs, then get its identity, authentication and IAM control requirements.">
+<title>Agent Residency Classifier — Decision Helpers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+:root{
+  --bg:var(--paper); --surface:var(--panel); --sunk:var(--line-soft);
+  --accent:var(--green); --accent-ink:#FFFFFF; --accent-soft:var(--fit-bg);
+  --red:var(--avoid); --red-soft:var(--avoid-bg);
+  --amber-soft:var(--partial-bg);
+  --info:var(--slate); --info-soft:#E9EDF1;
+  --display:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding-inline:16px;padding-block:0 64px;min-height:100vh}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+p{margin:0}
+button{font:inherit;color:inherit}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding-block:14px 10px;max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px}
+.home{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+.home:hover{text-decoration:underline;text-underline-offset:3px}
+.back{background:none;border:0;padding:6px 8px 6px 0;color:var(--accent);font-weight:600;cursor:pointer}
+.back[disabled]{visibility:hidden}
+.stage{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+main{max-width:720px;margin:0 auto;padding-top:28px}
+.screen{display:flex;flex-direction:column;gap:22px}
+@media (prefers-reduced-motion:no-preference){
+  .screen{animation:enter .28s ease both}
+  @keyframes enter{from{opacity:.001;transform:translateY(10px)}to{opacity:1;transform:none}}
+}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.qtitle{font-size:clamp(24px,4vw,30px);font-weight:700}
+.qhelp{color:var(--muted);max-width:62ch}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible,.btn:focus-visible,.back:focus-visible,.link:focus-visible,.ex:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt .mark{flex:none;width:20px;height:20px;margin-top:2px;border:2px solid var(--line);border-radius:50%;display:grid;place-items:center}
+.opt.multi .mark{border-radius:5px}
+.opt[aria-pressed="true"] .mark{border-color:var(--accent);background:var(--accent)}
+.opt[aria-pressed="true"] .mark::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent-ink)}
+.opt.multi[aria-pressed="true"] .mark::after{border-radius:2px}
+.opt .t{font-weight:600;display:block}
+.opt .eg{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+.opt .eg b{font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px;color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font-weight:600;font-size:16px;padding:12px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+
+/* welcome */
+.hero h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.01em}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.steps div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px}
+.steps b{display:block;font-family:var(--mono);font-weight:500;font-size:12px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.examples{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.ex{text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer}
+.ex:hover{border-color:var(--accent)}
+.ex .t{font-weight:600;display:block}
+.ex .d{display:block;color:var(--muted);font-size:13.5px}
+.divider{height:1px;background:var(--line)}
+
+/* reveal */
+.reveal{align-items:flex-start;padding-top:24px}
+.bigbadge{font-family:var(--mono);font-size:44px;width:104px;height:104px;border-radius:18px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink)}
+.bigbadge.none{background:var(--sunk);color:var(--muted);border:1px dashed var(--line)}
+@media (prefers-reduced-motion:no-preference){.reveal .bigbadge{animation:pop .5s cubic-bezier(.2,1.4,.4,1) both .05s}@keyframes pop{from{transform:scale(.6);opacity:.001}to{transform:none;opacity:1}}}
+.reveal h1{font-size:clamp(28px,4.6vw,38px)}
+.reveal .def{font-size:19px;max-width:60ch}
+.why{margin:0;padding-left:20px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+
+/* results */
+.rhead{display:flex;gap:16px;align-items:center}
+.badge{font-family:var(--mono);font-size:22px;min-width:60px;height:60px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);flex:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.card h3{font-family:var(--mono);font-weight:500;font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.card ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:16px}
+.flag{border-radius:8px;padding:10px 12px;font-size:15.5px;border-left:4px solid}
+.flag.red{background:var(--red-soft);border-color:var(--red)}
+.flag.amber{background:var(--amber-soft);border-color:var(--amber)}
+.flag.info{background:var(--info-soft);border-color:var(--info)}
+.flag .lvl{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+.flag.red .lvl{color:var(--red)} .flag.amber .lvl{color:var(--amber)} .flag.info .lvl{color:var(--info)}
+.ans{width:100%;border-collapse:collapse;font-size:15px}
+.ans th,.ans td{text-align:left;vertical-align:top;padding:8px 0;border-bottom:1px solid var(--line)}
+.ans th{font-weight:400;color:var(--muted);width:48%;padding-right:12px}
+.ans tr:last-child th,.ans tr:last-child td{border-bottom:0}
+input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+input[type=text]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+textarea{font-family:var(--mono);font-size:12.5px;width:100%;min-height:160px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px}
+.toast{font-size:14px;color:var(--muted);min-height:1.2em}
+
+/* reference */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.ref{border-collapse:collapse;width:100%;min-width:720px;font-size:14.5px}
+.ref th,.ref td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ref thead th{font-family:var(--mono);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);background:var(--sunk)}
+.ref tbody tr:last-child td{border-bottom:0}
+.ref ul{margin:0;padding-left:18px}
+.tcode{font-family:var(--mono);font-size:13px;color:var(--accent);display:block}
+.cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.case{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.case h3{font-size:16px}
+.case p{color:var(--muted)}
+.refs ul{margin:6px 0 0;padding-left:20px;font-size:15px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar">
+  <div class="bar-row" style="justify-content:flex-end;min-height:0"><a class="home" href="./">Decision helpers ↗</a></div>
+  <div class="bar-row"><button type="button" class="back" id="back">← Back</button><span class="stage" id="stage"></span></div>
+  <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+</div>
+<main id="main" aria-live="polite"></main>
+
+<script>
+const TYPES = {
+  1:{name:"Platform-native agent", def:"A sanctioned agent that a managed cloud agent platform runs for you. The platform creates the agent's identity and checks inbound user tokens automatically.",
+    decides:"A managed agent runtime hosts the agent and creates its identity when it is deployed.",
+    auth:"Platform-created workload identity (for example an AgentCore workload identity with an IAM execution role). Inbound user tokens from the workforce or customer IdP.",
+    actions:["Use the platform's native workload identity and access controls.","Connect the platform to the workforce IdP for admin-time ownership and runtime human delegation."],
+    controls:["Platform-native workload access management","One workload identity management tool across platforms","One authorization management platform"],
+    stack:["Identity: a workload identity created automatically on deployment, plus the execution role; no shared or human credentials","Inbound: workforce IdP tokens for colleagues and customer IdP tokens for customers, validated by the runtime's JWT authorizer","Outbound: a token vault or OAuth token exchange for delegated calls to target APIs","Authorization: a policy engine such as Cedar for platform-native targets, or OPA where the policy spans other targets","Discovery and audit: cloud config, resource inventory and audit-trail services; owner recorded in identity governance"],
+    fail:"Identity drift: agents are provisioned and removed quickly, and policies lag behind the running estate.",
+    examples:[["Agents deployed on a managed agent runtime (e.g. Amazon Bedrock AgentCore)","ill"],["First-party agents that serve customers, if hosted on a managed platform (they act for customers but are first-party, so not Type 6)","ill"],["Managed cloud agent services such as Amazon Bedrock Agents","ill"]]},
+  2:{name:"Self-managed enterprise agent", def:"A sanctioned agent running on compute your organisation operates. It can use a managed identity service, but your organisation runs the runtime and wires the identity in.",
+    decides:"Your organisation runs the agent's runtime: containers, clusters, VMs, functions or CI runners.",
+    auth:"Pod or task IAM role (for example EKS Pod Identity, IRSA, ECS task role). Optionally a managed workload identity, reached with that IAM role. Risk of API keys or developer tokens in secrets or environment variables.",
+    actions:["Provide the full workload IAM stack: workload IdP, secrets manager, PKI and a way to issue new workload identities.","Focus on workload access management tooling because the platform gives you little by default."],
+    controls:["Dedicated workload access management platform","One workload identity management tool","One authorization management platform"],
+    stack:["Identity: one IAM role per agent via pod or task identity, plus a managed workload identity so the agent appears in the agent identity directory","Outbound: a token vault and credential providers instead of secrets in pods; scope the IAM role to the agent's own workload identity and credential provider","Delegation: request workload access tokens with the user's workforce or customer IdP token; deny user-id delegation where a validated JWT is available","Secrets: a secrets manager with rotation for anything not in the token vault; no personal access tokens in pods","Authorization: OPA as PEP/PDP at the gateway or sidecar; a native policy engine where the target supports one","Discovery: pipeline and repository scanning plus cloud config and audit trails; owner recorded in identity governance"],
+    fail:"Long-lived or broadly scoped workload credentials that are not rotated.",
+    examples:[["Headless agents on containers that pick up tickets, write specs, review them and generate code","ill"],["Custom agents on EKS and ECS","ill"],["A coding CLI run headless in a CI runner","ill"]]},
+  3:{name:"SaaS-embedded agent", def:"An agent built into a SaaS product your organisation subscribes to. The vendor hosts and runs it.",
+    decides:"The vendor's multi-tenant service runs the agent; your organisation configures it.",
+    auth:"Runs with the signed-in colleague's SaaS permissions through SSO, or with a vendor-managed app identity. Delegation model is set by the vendor.",
+    actions:["Evaluate the vendor against strong IAM criteria: single sign-on, adaptive access and lifecycle management.","Check how the agent's actions are attributed and what data it can reach."],
+    controls:["Access management","Identity governance and administration (IGA)","Workload identity management","Privileged access management for admin changes to entitlements"],
+    stack:["SSO and conditional access through the workforce IdP; SCIM provisioning","Identity governance decides who can use and build agents, and the entitlements they inherit","PAM for admin changes to agent configuration and connectors","Vendor assessment: delegation model, connector scopes, audit log export to the SIEM","Connectors from the SaaS agent into internal APIs are target systems and need delegated tokens"],
+    fail:"Opaque delegation, limited visibility of what the agent does, and reliance on the vendor's tenant isolation.",
+    examples:[["Agents embedded in a work-management suite (e.g. Atlassian Rovo in Jira and Confluence)","ill"],["Copilot in a SaaS productivity suite (e.g. Microsoft 365 Copilot)","ill"],["Low-code agents published inside a SaaS suite","ill"]]},
+  4:{name:"AI coding agent", def:"A coding assistant integrated into a developer's IDE or terminal. It usually inherits the developer's identity and session.",
+    decides:"It runs on the developer's endpoint inside the development environment.",
+    auth:"Developer's SSO session, cloud CLI profile, Git credentials and any tokens on the laptop.",
+    actions:["Publish developer guidance for the tool.","Turn on the tool's enterprise guardrails and hooks.","Apply session controls on endpoints or target systems.","Add human approval using endpoint controls or the workload IdP.","Check whether target systems support delegation; reduce IAM technical debt where they do not."],
+    controls:["The coding tool's native security controls","Endpoint protection for discovery and runtime enforcement","JIT-PAM for privileged target systems","Workload identity management tooling for governance"],
+    stack:["Coding assistants configured through enterprise settings, steering and hooks","An approved list of MCP servers the tool may call","No standing production credentials on developer endpoints; JIT-PAM for elevated access","EDR on developer endpoints to detect unapproved tools","Branch protection and pipeline checks as the enforcement point for generated code"],
+    fail:"Software supply chain exposure and excessive write access to repositories or pipelines.",
+    examples:[["A coding assistant in the IDE (e.g. Kiro, Cursor)","ill"],["Claude Code or GitHub Copilot in the IDE","ill"]]},
+  5:{name:"Endpoint-native personal agent", def:"A personal, user-run agent on an endpoint, often open source and often unsanctioned. It inherits the user's sessions and has no central IAM control.",
+    decides:"It runs on a person's device and is not a coding assistant in a development environment.",
+    auth:"Whatever the user's device and browser hold: cookies, SSO sessions, saved tokens.",
+    actions:["Block and lock down endpoints.","Add compensating controls and IAM tooling.","Move approved use cases to self-managed enterprise agents (Type 2)."],
+    controls:["Endpoint protection to block the agents","Forward proxies and cloud access security brokers","SaaS evaluation with adaptive access","Workload IAM and JIT-PAM on target systems"],
+    stack:["EDR and application control to detect and block","Forward proxy and CASB rules for AI browsers and agent endpoints","Conditional access to limit session reuse from unmanaged agents","Route legitimate demand to a Type 2 or Type 1 service"],
+    fail:"Over-permission from inherited sessions, user tokens and the device's own authority.",
+    examples:[["Open-source personal agents installed by staff","ill"],["AI browsers acting on logged-in sessions","ill"],["Desktop assistants with locally installed MCP servers","ill"]]},
+  6:{name:"Agentic customer", def:"An autonomous agent acting for a customer or partner, reaching your organisation through its digital channels or APIs.",
+    decides:"The agent belongs to someone outside your organisation.",
+    auth:"Customer's own credentials (risk of credential sharing or screen scraping) or delegated OAuth tokens where headless APIs exist.",
+    actions:["Build headless services that agents can use without scraping.","Add modern bot detection.","Assess new agentic commerce protocols."],
+    controls:["Customer IAM controls","Bot detection","Identity threat detection and response (ITDR)","Delegated access in headless services","Partner IAM tiering and partner assessments"],
+    stack:["The customer IdP issues delegated, scoped tokens with customer consent; no credential sharing","Consider a hardened API security profile (for example FAPI 2.0) for agent access to sensitive APIs","Bot detection and ITDR on digital channels","Partner tiering and assessment for partner-operated agents"],
+    fail:"Agents impersonate customers with shared credentials, and automated traffic is hard to tell apart from abuse.",
+    examples:[["Customers' personal agents calling your channels or APIs","ill"],["Partner or third-party provider agents using your APIs","ill"],["Customers' agents talking to your customer-service agents","ill"]]}
+};
+
+/* Step 1 questions. next(a) returns the next question id or null when the type is known. */
+const QA = {
+  acts:{label:"Does it take actions?", help:"An agent does things on its own: it calls tools or APIs, writes or sends data, or changes something. An assistant that only answers questions is outside this taxonomy.",
+    opts:[["yes","Yes, it takes actions","Creates a ticket, sends an email, calls an API, commits code"],["no","No, it only answers","A chat assistant that summarises a document or answers a policy question"]],
+    next:a=>a.acts==="yes"?"owner":null},
+  owner:{label:"Whose agent is it?", help:"Think about who built or licensed it and who runs it, not who it serves. An agent your organisation builds to serve customers is still yours.",
+    opts:[["internal","Your organisation's","A productivity Copilot, an agent your organisation deploys on a cloud platform, a customer-service agent it builds"],["external","A customer's or partner's","A customer's personal AI assistant checking their balance, a fintech's agent using open banking APIs"]],
+    next:a=>a.owner==="internal"?"where":null},
+  where:{label:"Where does the agent's logic run?", help:"Pick where the agent's code executes, not where its model is hosted. An agent on a container that calls a hosted model still runs on that container.",
+    opts:[["saas","Inside a SaaS product your organisation subscribes to","Agents in a work-management suite, a productivity Copilot, a CRM or ITSM assistant"],
+          ["managed","On a managed cloud agent platform","A managed agent runtime such as Amazon Bedrock AgentCore, Amazon Bedrock Agents or Vertex AI Agent Builder"],
+          ["self","On compute your organisation operates","EKS, ECS, EC2, Lambda, CI runners, on-premises Kubernetes. Still this answer if the agent uses a managed identity or gateway service"],
+          ["endpoint","On a person's device","A coding assistant on a laptop, an AI browser, an open-source agent, a desktop assistant"]],
+    next:a=>a.where==="endpoint"?"coding":(a.where?"code":null)},
+  coding:{label:"Is it a coding assistant in the developer's IDE or terminal?", help:"Coding assistants get their own type because they work inside the development environment with the developer's access.",
+    opts:[["yes","Yes","Kiro, Claude Code, GitHub Copilot, Cursor"],["no","No","An AI browser, an open-source agent, a desktop assistant with local MCP servers"]],
+    next:()=>"sanctioned"},
+  sanctioned:{label:"Is it sanctioned and centrally managed?", help:"Sanction changes the controls you apply, not the type.",
+    opts:[["yes","Yes","Enterprise licence, SSO sign-in, settings pushed centrally by admins"],["no","No, or not known","Installed by the person, personal account, no central settings"]],
+    next:()=>null},
+  code:{label:"Does it write code, change repositories or run pipelines?", help:"This adds a coding-agent risk check. It does not change the type.",
+    opts:[["yes","Yes","Opens pull requests, pushes commits, triggers builds or deployments"],["no","No","Reads tickets, drafts documents, answers questions, updates records"]],
+    next:()=>null}
+};
+
+const QB = [
+  {id:"behalf", step:"Step 2 · Authority", label:"Who does it act for at runtime?", help:"The person or system whose authority the agent uses when it does something.",
+   opts:[["colleague","A signed-in colleague","A Copilot drafting an email as the colleague who asked"],["customer","A customer","A first-party agent answering a customer's question about their account"],["self","Itself, with no human in the request","A scheduled agent that triages alerts overnight"],["agent","Another agent or workload","A sub-agent called by an orchestrator agent"]]},
+  {id:"cred", step:"Step 2 · Credentials", label:"What credential does it use to reach target systems today?", help:"Answer for what is deployed now, not the target design.",
+   opts:[["workload","Its own workload identity","IAM role through pod identity, a managed workload identity, a SPIFFE ID"],["delegated","A delegated token for a user","OAuth token exchange, an on-behalf-of flow, a token vault"],["human","A human's session or credentials","A developer's SSO session, a personal access token in an environment variable"],["static","A static shared secret or API key","An API key in a config file or a secrets manager"],["unknown","Not known","The design document does not say"]]},
+  {id:"accountable", step:"Step 2 · Accountability", label:"Is a named human owner recorded for the agent?", help:"A person, not a team mailbox, who answers for what the agent does.",
+   opts:[["yes","Yes","A named product owner in the CMDB or in identity governance"],["no","No","No owner, or only a shared team name"]]},
+  {id:"boundary", step:"Step 3 · Trust boundary", label:"What is the furthest trust boundary it crosses?", help:"Where tokens must be checked. Crossing into another domain needs trust that a human sets up.",
+   opts:[["closed","Stays in one security domain","One cloud account or organisation, or one SaaS tenant"],["federated","Reaches known external domains","A SaaS cloud, a productivity graph API, a partner's API"],["open","Discovers and calls agents or tools it was not configured for","Finds agents through A2A agent cards or a public MCP registry"]]},
+  {id:"mediators", step:"Step 5 · Mediators", multi:true, label:"Which mediators sit between the agent and its targets?", help:"Select all that apply.",
+   opts:[["mcpgw","MCP gateway","A managed MCP gateway or an MCP proxy"],["apigw","API gateway","Amazon API Gateway, Apigee, Kong"],["llmgw","AI or LLM gateway","A proxy that logs prompts and applies guardrails before the model"],["pam","JIT-PAM","Time-bound elevation through a PAM tool"],["none","None","The agent calls targets directly"]]},
+  {id:"authz", step:"Step 6 · Authorization", label:"Where are its actions authorized?", help:"How each action is checked while the agent runs.",
+   opts:[["coarse","Only by the token scope or IAM role","If the role allows it, the agent can do it"],["percall","A policy decision on each call","OPA, Cedar with a verified-permissions service, a native policy engine"],["hitl","Policy on each call plus human approval for high-risk actions","An approval step before a payment or a production change"],["none","Not defined","The design does not say"]]}
+];
+
+const PRESETS = [
+  ["Coding assistant (IDE)","Developer coding agent in the IDE (e.g. Kiro, Copilot)",{acts:"yes",owner:"internal",where:"endpoint",coding:"yes",sanctioned:"yes"}],
+  ["SaaS suite agent","Agents inside a work-management suite (e.g. Rovo in Jira/Confluence)",{acts:"yes",owner:"internal",where:"saas",code:"no"}],
+  ["Productivity Copilot","A Copilot in a SaaS productivity suite",{acts:"yes",owner:"internal",where:"saas",code:"no"}],
+  ["Spec-writing agent","Headless agent on managed containers that writes specs from tickets",{acts:"yes",owner:"internal",where:"self",code:"no"}],
+  ["Spec-checking agent","Headless agent on managed containers that reviews specs",{acts:"yes",owner:"internal",where:"self",code:"no"}],
+  ["Code-generating agent","Headless agent on managed containers that generates code",{acts:"yes",owner:"internal",where:"self",code:"yes"}],
+  ["Agent on your containers","Custom agent on containers your organisation operates",{acts:"yes",owner:"internal",where:"self",code:"no"}],
+  ["Agent on a managed platform","Agent on a managed cloud agent runtime",{acts:"yes",owner:"internal",where:"managed",code:"no"}],
+  ["Customer-service agent","A first-party agent serving customers",{acts:"yes",owner:"internal",where:"managed",code:"no",behalf:"customer"}],
+  ["Customer's own agent","A customer's agent calling your APIs",{acts:"yes",owner:"external",behalf:"customer"}],
+  ["Personal AI browser","Unsanctioned personal agent on a laptop",{acts:"yes",owner:"internal",where:"endpoint",coding:"no",sanctioned:"no"}]
+];
+
+const CASES = [
+  ["A headless coding agent on containers writes code. Is it Type 4?","No. It runs on your compute with its own identity and no developer session, so it is Type 2. The coding-agent risk check adds controls for repository write scope and pipeline privileges."],
+  ["A container-hosted agent uses a managed identity service. Does it become Type 1?","No, it stays Type 2 because your organisation runs the compute. A managed identity service gives it a registered identity and token vault, but your organisation creates the identity, validates the user token and scopes the pod or task IAM role, which unlocks everything else."],
+  ["A coding assistant calls a SaaS MCP server. Which type applies?","Classify the caller. The coding assistant is Type 4. The SaaS MCP server is a target system, recorded in Step 4."],
+  ["A first-party customer-service agent talks to customers. Is it Type 6?","No. It is your organisation's agent, so Type 1 or 2 by where it runs, acting for customers through the customer IdP. Type 6 is the customer's own agent calling in."],
+  ["A multi-agent pipeline has several agents.","Classify each agent separately. They can share a type but need separate identities, owners and scopes."],
+  ["A low-code SaaS agent calls an internal API through a custom connector.","Still Type 3. The internal API is a target system, and the connector should use delegated tokens rather than a shared service account."]
+];
+
+/* ---------- state ---------- */
+let S = fresh();
+function fresh(){return {a:{}, name:"", preset:"", history:[]};}
+const main=document.getElementById("main");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const li=arr=>arr.map(x=>`<li>${esc(x)}</li>`).join("");
+
+function classify(a){
+  const path=[];
+  if(a.acts==="no"){path.push("It only answers questions, so it is outside the agent taxonomy.");return {type:0,path};}
+  if(a.acts!=="yes") return {type:null,path};
+  path.push("It takes actions, so it is an agent.");
+  if(a.owner==="external"){path.push("It belongs to a customer or partner and reaches your organisation through its channels or APIs.");return {type:6,path};}
+  if(a.owner!=="internal") return {type:null,path};
+  path.push("It is your organisation's agent.");
+  if(a.where==="saas"){path.push("A SaaS vendor hosts and runs it.");return {type:3,path};}
+  if(a.where==="managed"){path.push("A managed cloud agent platform runs it and creates its identity.");return {type:1,path};}
+  if(a.where==="self"){path.push("It runs on compute your organisation operates.");return {type:2,path};}
+  if(a.where!=="endpoint") return {type:null,path};
+  path.push("It runs on a person's device.");
+  if(a.coding==="yes"){path.push("It is a coding assistant in the development environment.");return {type:4,path};}
+  if(a.coding==="no"){path.push("It is a general personal agent, not a coding assistant.");return {type:5,path};}
+  return {type:null,path};
+}
+
+function flags(a,t){
+  const f=[];const add=(lvl,title,text)=>f.push({lvl,title,text});
+  if(t===4&&a.sanctioned==="no") add("red","Unsanctioned coding tool","Detect and block with endpoint controls, or bring it under enterprise settings.");
+  if(t===5&&a.sanctioned==="no") add("red","Shadow agent","Block on the endpoint and offer a sanctioned Type 2 or Type 1 route for the use case.");
+  if(t===5&&a.sanctioned==="yes") add("amber","Sanctioned personal agent","Sanction does not give central IAM control. Plan a move to a Type 2 service.");
+  if(a.code==="yes") add("amber","Coding-agent risk check","Limit repository write scope and pipeline privileges, and keep branch protection and review as the enforcement point.");
+  if(a.cred==="human") add("red","Impersonation","It uses a human's session or credentials. Give it its own workload identity and use delegation (OAuth token exchange, RFC 8693). Until targets support that, contain it with the secrets manager, endpoint controls and JIT-PAM.");
+  if(a.cred==="static") add("amber","Static secret","Replace the shared key with a platform-issued identity and short-lived credentials.");
+  if(a.cred==="unknown") add("amber","Credential not known","Step 4 cannot be completed until the credential to each target is known.");
+  if(a.accountable==="no") add("red","No accountable owner","Record a named human owner before production. A human stays accountable for every agent.");
+  if(a.boundary==="federated") add("amber","Cross-domain trust","A human must set up trust with each new domain, either by admin policy or by runtime consent.");
+  if(a.boundary==="open") add("red","Open agent network","Standards for dynamic agent discovery and registration are immature. Start in closed or federated environments.");
+  if(Array.isArray(a.mediators)&&a.mediators.includes("none")&&[1,2,4].includes(t)) add("amber","No mediator","There is no gateway to inspect tokens or apply policy before target systems.");
+  if(a.authz==="coarse") add("amber","Coarse authorization","Scope or role checks alone do not control what the agent does per call. Add a per-call policy decision.");
+  if(a.authz==="none") add("red","Authorization not defined","Step 6 is missing. Define where policy is enforced and decided.");
+  if(a.behalf==="customer"&&[1,2].includes(t)) add("info","First-party agent serving customers","Customer identity comes from your customer IdP. The agent should hold delegated, scoped tokens, never the customer's credentials.");
+  if(a.behalf==="colleague"&&a.cred==="workload") add("info","Own identity for a colleague's request","Check the colleague's context is passed through (delegation) so the agent cannot exceed that colleague's access.");
+  if(t===6&&a.cred==="human") add("red","Credential sharing","The customer's agent is using the customer's credentials. Offer a headless API with delegated consent instead.");
+  return f;
+}
+
+/* ---------- navigation ---------- */
+// A screen is a string: "welcome", "qa:<id>", "reveal", "qb:<index>", "results", "reference"
+let current="welcome";
+function go(next,push=true){ if(push) S.history.push(current); current=next; render(); window.scrollTo(0,0); }
+function back(){ if(!S.history.length) return; current=S.history.pop(); render(); window.scrollTo(0,0); }
+document.getElementById("back").addEventListener("click",back);
+
+function progress(){
+  if(current==="welcome"||current==="reference") return 0;
+  if(current.startsWith("qa:")) return 8+Math.min(S.history.filter(h=>h.startsWith("qa:")).length,4)*9;
+  if(current==="reveal") return 50;
+  if(current.startsWith("qb:")) return 50+(+current.slice(3))*(42/QB.length);
+  return 100;
+}
+function stageText(){
+  if(current==="welcome") return "";
+  if(current==="reference") return "Reference";
+  if(current.startsWith("qa:")) return "Part 1 · Find the type";
+  if(current==="reveal") return "Type found";
+  if(current.startsWith("qb:")) return `Part 2 · Identity requirements · ${+current.slice(3)+1} of ${QB.length}`;
+  return "Result";
+}
+
+function optionButtons(q, value, multi){
+  return q.opts.map(([v,t,eg])=>{
+    const on = multi ? (value||[]).includes(v) : value===v;
+    return `<button type="button" class="opt${multi?" multi":""}" data-v="${v}" aria-pressed="${on}"><span class="mark"></span><span><span class="t">${esc(t)}</span>${eg?`<span class="eg"><b>e.g.</b>${esc(eg)}</span>`:""}</span></button>`;
+  }).join("");
+}
+
+function render(){
+  document.getElementById("back").disabled=!S.history.length;
+  document.getElementById("stage").textContent=stageText();
+  document.getElementById("prog").style.width=progress()+"%";
+  let h="";
+  if(current==="welcome") h=welcome();
+  else if(current.startsWith("qa:")) h=qaScreen(current.slice(3));
+  else if(current==="reveal") h=reveal();
+  else if(current.startsWith("qb:")) h=qbScreen(+current.slice(3));
+  else if(current==="results") h=results();
+  else if(current==="reference") h=reference();
+  main.innerHTML=`<section class="screen${current==="reveal"?" reveal":""}">${h}</section>`;
+  wire();
+  const first=main.querySelector("h1,h2");
+  if(first){first.setAttribute("tabindex","-1");first.focus({preventScroll:true});}
+}
+
+function welcome(){
+  return `<div class="hero" style="display:flex;flex-direction:column;gap:10px">
+      <span class="eyebrow">Agentic IAM</span>
+      <h1>Agent Residency Classifier</h1>
+      <p class="qhelp">Answer one question at a time. The first few questions find the agent's type from where it runs. The rest record its identity requirements.</p>
+    </div>
+    <div class="steps">
+      <div><b>Part 1</b>Find the type: 3 to 5 questions</div>
+      <div><b>Reveal</b>The type and why</div>
+      <div><b>Part 2</b>Identity requirements: 6 questions</div>
+    </div>
+    <div class="row"><button type="button" class="btn" id="start">Start with a new agent</button><button type="button" class="link" id="toRef">Reference: the six types and edge cases</button></div>
+    <div class="divider"></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 style="font-size:19px">Or start from an example</h2>
+      <p class="muted small">Part 1 is filled in and you go straight to the type. Part 2 depends on each design, so you answer it.</p>
+      <div class="examples">${PRESETS.map(([n,d],i)=>`<button type="button" class="ex" data-preset="${i}"><span class="t">${esc(n)}</span><span class="d">${esc(d)}</span></button>`).join("")}</div>
+    </div>`;
+}
+
+function qaScreen(id){
+  const q=QA[id];
+  const nameField = id==="acts" ? `<div style="display:flex;flex-direction:column;gap:6px"><label for="agentName" class="muted small">Agent name (optional, used in the record)</label><input type="text" id="agentName" autocomplete="off" value="${esc(S.name)}"></div>` : "";
+  return `${nameField}<h1 class="qtitle">${esc(q.label)}</h1><p class="qhelp">${esc(q.help)}</p><div class="opts" data-q="${id}">${optionButtons(q,S.a[id],false)}</div>`;
+}
+
+function reveal(){
+  const {type,path}=classify(S.a);
+  if(type===0) return `<div class="bigbadge none">—</div><span class="eyebrow">Result</span><h1>Not an agent</h1><p class="def">It only answers questions. Govern it as an AI application rather than with agent IAM controls.</p><div class="row"><button type="button" class="btn" id="restart">Classify another</button></div>`;
+  const T=TYPES[type];
+  return `<div class="bigbadge">T${type}</div>
+    <span class="eyebrow">${S.name?esc(S.name):"Your agent"}</span>
+    <h1>Type ${type}: ${esc(T.name)}</h1>
+    <p class="def">${esc(T.def)}</p>
+    <div style="display:flex;flex-direction:column;gap:4px"><span class="muted small">Why</span><ol class="why small">${li(path)}</ol></div>
+    <div class="row"><button type="button" class="btn" id="toB">Continue to identity requirements</button><button type="button" class="btn ghost" id="skipB">Skip to results</button></div>`;
+}
+
+function qbScreen(i){
+  const q=QB[i];
+  const multi=!!q.multi;
+  return `<span class="eyebrow">${esc(q.step)}</span><h1 class="qtitle">${esc(q.label)}</h1><p class="qhelp">${esc(q.help)}</p>
+    <div class="opts" data-qb="${i}">${optionButtons(q,S.a[q.id],multi)}</div>
+    <div class="row">${multi?`<button type="button" class="btn" id="multiNext" ${(S.a[q.id]||[]).length?"":"disabled"}>Continue</button>`:""}<button type="button" class="link" id="skipQ">Not sure, skip this question</button></div>`;
+}
+
+function labelFor(q,v){const o=q.opts.find(o=>o[0]===v);return o?o[1]:v;}
+function answerText(q){let v=S.a[q.id]; if(Array.isArray(v)) return v.length?v.map(x=>labelFor(q,x)).join(", "):""; return v?labelFor(q,v):"";}
+
+function results(){
+  const {type,path}=classify(S.a); const T=TYPES[type]; const fl=flags(S.a,type);
+  const flagHTML=fl.length?fl.map(x=>`<div class="flag ${x.lvl}"><span class="lvl">${x.lvl==="red"?"Fix":x.lvl==="amber"?"Review":"Note"}</span><b>${esc(x.title)}.</b> ${esc(x.text)}</div>`).join(""):`<p class="muted small">No flags from your answers.</p>`;
+  return `<div class="rhead"><div class="badge">T${type}</div><div><span class="eyebrow">${esc(S.name||"Agent")}</span><h1 style="font-size:26px">Type ${type}: ${esc(T.name)}</h1></div></div>
+    <p>${esc(T.def)}</p>
+    <div class="card"><h3>Flags from your answers</h3>${flagHTML}</div>
+    <div class="card"><h3>Your answers</h3><table class="ans"><tbody>
+      <tr><th>Why this type</th><td>${esc(path.join(" "))}</td></tr>
+      ${QB.map(q=>`<tr><th>${esc(q.label)}</th><td>${esc(answerText(q))||'<span class="muted">Not answered</span>'}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="card"><h3>How this type usually authenticates</h3><p>${esc(T.auth)}</p><p class="muted small">Typical failure: ${esc(T.fail)}</p></div>
+    <div class="card"><h3>Required actions for this type</h3><ul>${li(T.actions)}</ul></div>
+    <div class="card"><h3>IAM controls for this type</h3><ul>${li(T.controls)}</ul></div>
+    <div class="card"><h3>Example mapping to a reference stack</h3><ul>${li(T.stack)}</ul></div>
+    <div class="card"><h3>Save the record</h3>
+      <div style="display:flex;flex-direction:column;gap:6px"><label for="agentNameR" class="muted small">Agent name</label><input type="text" id="agentNameR" autocomplete="off" value="${esc(S.name)}"></div>
+      <div class="row"><button type="button" class="btn" id="copy">Copy as Markdown</button><button type="button" class="btn ghost" id="restart">Classify another agent</button></div>
+      <div class="toast" id="toast"></div><textarea id="mdout" readonly aria-label="Markdown record" hidden></textarea></div>
+    <div class="card refs"><h3>Reference material</h3>
+      <p><button type="button" class="link" id="toRef">The six types with examples, and edge cases</button></p>
+      <ul>${REFS}</ul></div>`;
+}
+
+const REFS=`<li>Informed by industry analyst research on IAM for AI agents and workloads</li>
+<li><a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/understanding-agent-identities.html" target="_blank" rel="noopener">AWS: AgentCore Identity workload identities</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/get-workload-access-token.html" target="_blank" rel="noopener">AWS: Get workload access token</a></li>`;
+
+function reference(){
+  const st={est:"Illustrative",plan:"Illustrative",ill:"Illustrative"};
+  return `<span class="eyebrow">Reference</span><h1 style="font-size:28px">The six agent types</h1>
+    <p class="qhelp">The type is decided by where the agent runs. The definitions and controls are informed by industry analyst research; the stack mapping is illustrative.</p>
+    <div class="tablewrap"><table class="ref"><thead><tr><th style="width:22%">Type</th><th style="width:30%">What decides it</th><th>Examples</th></tr></thead><tbody>
+    ${[1,2,3,4,5,6].map(n=>{const T=TYPES[n];return `<tr><td><span class="tcode">T${n}</span><b>${esc(T.name)}</b></td><td>${esc(T.decides)}</td><td><ul>${T.examples.map(([e,s])=>`<li>${esc(e)} <span class="muted small">(${st[s]})</span></li>`).join("")}</ul></td></tr>`;}).join("")}
+    </tbody></table></div>
+    <h2 style="font-size:20px">Cases that look ambiguous</h2>
+    <div class="cases">${CASES.map(([q,a])=>`<div class="case"><h3>${esc(q)}</h3><p>${esc(a)}</p></div>`).join("")}</div>
+    <div class="refs"><h2 style="font-size:20px">Sources</h2><ul>${REFS}</ul></div>
+    <div class="row"><button type="button" class="btn ghost" id="refBack">Back</button></div>`;
+}
+
+function markdown(){
+  const {type,path}=classify(S.a); const T=TYPES[type]; const fl=flags(S.a,type);
+  const L=[`## ${S.name||"Unnamed agent"}`,"",`**Type:** Type ${type}: ${T.name}`,"",`**Why:** ${path.join(" ")}`,"","| Question | Answer |","|---|---|"];
+  QB.forEach(q=>L.push(`| ${q.label} | ${answerText(q)||"Not answered"} |`));
+  if(fl.length){L.push("","**Flags:**");fl.forEach(f=>L.push(`- ${f.lvl==="red"?"Fix":f.lvl==="amber"?"Review":"Note"}: ${f.title}. ${f.text}`));}
+  L.push("","**Required actions:**");T.actions.forEach(x=>L.push(`- ${x}`));
+  L.push("","**Example mapping:**");T.stack.forEach(x=>L.push(`- ${x}`));
+  L.push("","_Classification per the agent residency taxonomy (informed by industry analyst research)._");
+  return L.join("\n");
+}
+
+function wire(){
+  const $=id=>document.getElementById(id);
+  const on=(id,fn)=>{const el=$(id);if(el) el.addEventListener("click",fn);};
+  on("start",()=>{S=fresh();S.history=["welcome"];current="qa:acts";render();});
+  on("toRef",()=>go("reference"));
+  on("refBack",back);
+  on("restart",()=>{S=fresh();current="welcome";render();window.scrollTo(0,0);});
+  on("toB",()=>go("qb:0"));
+  on("skipB",()=>go("results"));
+  main.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>{
+    const [n,,ans]=PRESETS[+b.dataset.preset];
+    S=fresh();S.name=n;S.preset=n;Object.assign(S.a,JSON.parse(JSON.stringify(ans)));
+    S.history=["welcome"];current="reveal";render();window.scrollTo(0,0);
+  }));
+  const nm=$("agentName"); if(nm) nm.addEventListener("input",()=>S.name=nm.value.trim());
+  const nmR=$("agentNameR"); if(nmR) nmR.addEventListener("input",()=>S.name=nmR.value.trim());
+
+  const qa=main.querySelector("[data-q]");
+  if(qa) qa.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+    const id=qa.dataset.q; const changed=S.a[id]!==b.dataset.v;
+    S.a[id]=b.dataset.v;
+    if(changed) clearAfter(id);
+    qa.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    setTimeout(()=>{const nx=QA[id].next(S.a); go(nx?"qa:"+nx:"reveal");},160);
+  }));
+
+  const qb=main.querySelector("[data-qb]");
+  if(qb){
+    const i=+qb.dataset.qb, q=QB[i];
+    const advance=()=>go(i+1<QB.length?"qb:"+(i+1):"results");
+    qb.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+      if(q.multi){
+        let arr=S.a[q.id]||[]; const v=b.dataset.v;
+        if(v==="none") arr=arr.includes("none")?[]:["none"];
+        else {arr=arr.filter(x=>x!=="none"); arr=arr.includes(v)?arr.filter(x=>x!==v):[...arr,v];}
+        S.a[q.id]=arr;
+        qb.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",arr.includes(x.dataset.v)));
+        $("multiNext").disabled=!arr.length;
+      } else {
+        S.a[q.id]=b.dataset.v;
+        qb.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",x===b));
+        setTimeout(advance,160);
+      }
+    }));
+    on("multiNext",advance);
+    on("skipQ",()=>{delete S.a[q.id];advance();});
+  }
+
+  on("copy",()=>{
+    const md=markdown(), out=$("mdout"); out.value=md;
+    const fallback=()=>{out.hidden=false;out.focus();out.select();$("toast").textContent="Clipboard blocked here. The record is selected below; press Ctrl+C or Cmd+C.";};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(md).then(()=>{$("toast").textContent="Copied to clipboard.";},fallback);}else fallback();
+  });
+}
+
+// When a Part 1 answer changes, later Part 1 answers may no longer apply.
+function clearAfter(id){
+  const order=["acts","owner","where","coding","sanctioned","code"];
+  order.slice(order.indexOf(id)+1).forEach(k=>delete S.a[k]);
+}
+
+render();
+</script>
+</body>
+</html>

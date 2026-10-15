@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Architectural Instincts — a questioning diagnostic for leaders: what do your questions teach the organisation to think about?">
+<title>Architectural Instincts — Decision Helpers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+:root{
+  --bg:var(--paper); --surface:var(--panel); --sunk:var(--line-soft);
+  --accent:var(--green); --accent-ink:#FFFFFF; --accent-soft:var(--fit-bg);
+  --amber-soft:var(--partial-bg);
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding-inline:16px;padding-block:0 72px;min-height:100vh}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.2}
+p{margin:0}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+main{max-width:760px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.mono-label{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500}
+
+/* top bar */
+.top{max-width:760px;margin:0 auto;padding-top:16px;display:flex;justify-content:flex-end}
+.home{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+.home:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* hero */
+.hero{padding:28px 0 8px;display:flex;flex-direction:column;gap:14px}
+.hero h1{font-size:clamp(34px,6vw,54px);font-weight:700;letter-spacing:-.03em;line-height:1.02}
+.hero-copy{color:var(--muted);font-size:18px;max-width:62ch}
+.thesis{padding:16px 18px;border:1px solid var(--line);border-left:4px solid var(--clay);border-radius:10px;background:var(--surface);font-weight:600;font-size:18px}
+.note{color:var(--muted);font-size:14.5px;max-width:66ch}
+
+/* progress */
+.progress-wrap{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 0 12px;margin:18px 0 10px}
+.progress-meta{display:flex;justify-content:space-between;gap:16px;margin-bottom:8px}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+
+/* questions */
+.question{margin:0 0 16px;padding:22px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow)}
+fieldset.question{min-width:0}
+.question legend{float:left;padding:0}
+.question h2{clear:both;margin:6px 0 14px;font-size:20px;font-weight:600;line-height:1.35}
+.option{display:flex;align-items:flex-start;gap:12px;margin-top:10px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;transition:border-color .15s ease,background .15s ease}
+.option:hover{border-color:var(--accent)}
+.option:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.option:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.option input{flex:none;margin:4px 0 0;width:17px;height:17px;accent-color:var(--accent)}
+.option span{flex:1}
+
+/* actions */
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.btn{font-weight:600;font-size:16px;padding:12px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.message{display:none;margin-top:14px;padding:12px 14px;border-radius:8px;border-left:4px solid var(--amber);background:var(--amber-soft);font-size:15.5px}
+
+/* results */
+.results{display:none;margin-top:36px;padding:28px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);scroll-margin-top:16px}
+.score-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin:12px 0 4px}
+.big-score{font-size:clamp(64px,12vw,96px);font-weight:700;line-height:.88;letter-spacing:-.05em;color:var(--accent)}
+.out-of{padding-bottom:6px;color:var(--muted);font-family:var(--mono);font-size:14px;letter-spacing:.04em}
+.profile-name{margin-top:18px;font-size:26px;font-weight:700;letter-spacing:-.01em}
+.profile-copy{max-width:66ch;margin-top:6px;color:var(--muted)}
+.dimensions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}
+.dimension{padding:16px 18px;border-radius:10px;background:var(--bg);border:1px solid var(--line-soft)}
+.dimension-head{display:flex;justify-content:space-between;gap:14px;margin-bottom:10px;font-weight:600}
+.dimension-head .mono{font-family:var(--mono);font-weight:500;font-size:14px}
+.meter{height:8px;overflow:hidden;border-radius:999px;background:var(--line)}
+.meter i{display:block;height:100%;width:0;border-radius:inherit;background:var(--accent);transition:width .4s ease}
+.dimension p{margin-top:10px;color:var(--muted);font-size:15px}
+.section{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.section h3{font-size:20px;font-weight:600;margin-bottom:6px}
+.section-intro{margin:0 0 14px;color:var(--muted);font-size:15.5px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile{padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);display:flex;flex-direction:column;gap:5px}
+.tile strong{font-weight:600}
+.tile p{color:var(--muted);font-size:15px}
+.tile a{margin-top:6px;font-size:14.5px;font-weight:600;text-decoration:none}
+.tile a:hover{text-decoration:underline;text-underline-offset:3px}
+.tag{display:inline-block;align-self:flex-start;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.model{margin-top:24px;padding:18px 20px;border-radius:10px;background:var(--accent-soft);display:flex;flex-direction:column;gap:8px}
+.flow{font-family:var(--mono);font-size:14.5px;font-weight:600;color:var(--accent);line-height:1.6}
+.closing{font-weight:600}
+.method{margin-top:20px;color:var(--muted);font-size:14px}
+
+@media (max-width:640px){
+  .question,.results{padding:18px}
+  .dimensions,.grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .progress i,.meter i{transition:none}
+}
+@media print{
+  .progress-wrap,.actions,.message,.top{display:none!important}
+  body{background:#fff}
+  .question,.results{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="top"><a class="home" href="./">Decision helpers ↗</a></div>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Executive questioning diagnostic</div>
+    <h1>Architectural Instincts</h1>
+    <p class="hero-copy">When a proposal reaches you, what do your questions teach the organisation to think about? Choose the response closest to your normal instinct — not the one that sounds most sophisticated.</p>
+    <div class="thesis">The questions leaders ask become the questions the organisation learns to answer.</div>
+    <p class="note">This is a practical behavioural diagnostic, not a validated psychometric instrument. Answer choices are intentionally similar in length and tone, and their order is shuffled.</p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="mono-label">Progress</span>
+      <span class="mono-label" id="progressText">0 of 10 answered</span>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+  </div>
+
+  <form id="quizForm" novalidate>
+    <div id="questions"></div>
+
+    <div class="actions">
+      <button type="submit" class="btn">See my profile</button>
+      <button type="button" class="btn ghost" id="resetButton">Start again</button>
+    </div>
+
+    <div class="message" id="message" role="alert">Please answer all ten questions before viewing your profile.</div>
+  </form>
+
+  <section class="results" id="results" aria-live="polite">
+    <div class="eyebrow">Your architectural leadership profile</div>
+
+    <div class="score-row">
+      <div class="big-score" id="overallScore">0</div>
+      <div class="out-of">/ 100 overall</div>
+    </div>
+
+    <div class="profile-name" id="profileName"></div>
+    <p class="profile-copy" id="profileCopy"></p>
+
+    <div class="dimensions">
+      <div class="dimension">
+        <div class="dimension-head"><span>Architectural Thinking</span><span class="mono" id="archScore">0/100</span></div>
+        <div class="meter"><i id="archBar"></i></div>
+        <p id="archCopy"></p>
+      </div>
+      <div class="dimension">
+        <div class="dimension-head"><span>Behavioural Leverage</span><span class="mono" id="behScore">0/100</span></div>
+        <div class="meter"><i id="behBar"></i></div>
+        <p id="behCopy"></p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Three prompts to practise</h3>
+      <p class="section-intro">These are based on the areas where your answers left the most architectural or behavioural leverage unused.</p>
+      <div class="grid2" id="tips"></div>
+    </div>
+
+    <div class="section">
+      <h3>Why this matters</h3>
+      <p class="section-intro">The links below distinguish behavioural research from architecture and leadership practice. They explain the thinking behind the prompts; they do not make this a scientifically validated assessment.</p>
+      <div class="grid2" id="research"></div>
+    </div>
+
+    <div class="model">
+      <span class="mono-label">The habit to reinforce</span>
+      <div class="flow">Problem → Capability → Gap → Architecture → Roadmap → Solution</div>
+      <p class="closing">The aim is not for senior leaders to become the architect in every meeting. It is for their questions to make architectural reasoning normal before the meeting happens.</p>
+    </div>
+
+    <p class="method">Overall score = 60% Architectural Thinking + 40% Behavioural Leverage. Scores are directional and intended for reflection, coaching and discussion.</p>
+  </section>
+</main>
+
+<script>
+/*
+  Scoring:
+  - Each option has an Architectural Thinking score (a) from 0–3
+  - Each option has a Behavioural Leverage score (b) from 0–3
+  - Scores are not displayed in the UI.
+  - Options are shuffled every time the questions render.
+  - Overall = 60% architecture + 40% behaviour.
+*/
+
+const researchLibrary = {
+  fixation: {
+    type: "Behavioural research",
+    title: "Design fixation",
+    body: "Early exposure to a candidate solution can constrain later thinking. This supports asking about the problem or capability gap before debating products.",
+    label: "Jansson & Smith, Design Studies (1991)",
+    url: "https://doi.org/10.1016/0142-694X(91)90003-F"
+  },
+  external: {
+    type: "Behavioural research",
+    title: "External representations",
+    body: "Maps and diagrams can become shared objects of thought, making complex relationships easier to inspect than verbal assertions alone.",
+    label: "David Kirsh, AI & Society (2010)",
+    url: "https://doi.org/10.1007/s00146-010-0272-8"
+  },
+  capability: {
+    type: "Architecture practice",
+    title: "Capability-based planning",
+    body: "Capability-based planning links business outcomes, capabilities, architecture and implementation planning rather than beginning with technology choices.",
+    label: "TOGAF — Capability-Based Planning",
+    url: "https://www.togafcertified.com/TOGAF%209.2%20HTML/chap28.html"
+  },
+  adr: {
+    type: "Architecture practice",
+    title: "Architecture as reasoning",
+    body: "The UK government ADR framework emphasises visibility, traceability, appropriate decision levels and escalation for genuinely broader impacts.",
+    label: "UK Government ADR Framework",
+    url: "https://www.gov.uk/government/publications/architectural-decision-record-framework/architectural-decision-record-framework"
+  },
+  hindsight: {
+    type: "Behavioural research",
+    title: "Prospective hindsight",
+    body: "Reasoning about a future outcome as if it had already happened can change how people explain possible events and can help surface overlooked causes.",
+    label: "Mitchell, Russo & Pennington (1989)",
+    url: "https://doi.org/10.1002/bdm.3960020103"
+  },
+  premortem: {
+    type: "Decision practice",
+    title: "Premortem",
+    body: "Assuming a project has failed can legitimise dissent and encourage people to surface concerns before commitment.",
+    label: "Gary Klein, Harvard Business Review",
+    url: "https://hbr.org/2007/09/performing-a-project-premortem"
+  },
+  advice: {
+    type: "Leadership practice",
+    title: "The Advice Process",
+    body: "Dennis Bakke's model separates advice from approval: the decision owner seeks relevant expertise while retaining responsibility for the decision.",
+    label: "Dennis Bakke — Advice Process",
+    url: "https://dennisbakke.blogspot.com/2007/06/9-everyone-must-get-advice-before.html"
+  }
+};
+
+const questions = [
+  {
+    id: "q1",
+    prompt: "A team proposes a new platform for a recurring operational problem. What do you ask first?",
+    tipTitle: "Start before the product",
+    tip: "Ask: “Where is the capability gap evidenced today?”",
+    research: ["fixation", "capability"],
+    options: [
+      { text: "What requirements are not being met today?", a: 2, b: 2 },
+      { text: "Where is the capability gap evidenced today?", a: 3, b: 3 },
+      { text: "What does the current platform prevent today?", a: 2, b: 2 },
+      { text: "What value would the proposed platform unlock?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q2",
+    prompt: "The team says the proposal is aligned to strategy. What do you ask next?",
+    tipTitle: "Make strategy traceable",
+    tip: "Ask: “Where is that objective reflected in the roadmap?”",
+    research: ["capability", "external"],
+    options: [
+      { text: "Which strategic objective does this advance?", a: 2, b: 2 },
+      { text: "Where is that objective reflected in the roadmap?", a: 3, b: 3 },
+      { text: "Which strategy did the team assess against?", a: 2, b: 1 },
+      { text: "Which sponsor has confirmed the strategic fit?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q3",
+    prompt: "You are told that Architecture has reviewed the proposal. What gives you confidence?",
+    tipTitle: "Ask about challenge",
+    tip: "Ask: “What concern did architecture ask you to resolve?”",
+    research: ["adr", "advice"],
+    options: [
+      { text: "Which architecture forum reviewed the proposal?", a: 1, b: 1 },
+      { text: "Which architect worked directly with the team?", a: 2, b: 2 },
+      { text: "What concern did architecture ask them to resolve?", a: 3, b: 3 },
+      { text: "Which standards were checked during the review?", a: 2, b: 1 }
+    ]
+  },
+  {
+    id: "q4",
+    prompt: "A team says its design conforms to the architecture. What do you ask?",
+    tipTitle: "Ask for position, not assurance",
+    tip: "Ask: “Where does this sit in the target architecture?”",
+    research: ["external", "adr"],
+    options: [
+      { text: "Which reference architecture applies to this decision?", a: 2, b: 2 },
+      { text: "Where does this sit in the target architecture?", a: 3, b: 3 },
+      { text: "Which principles does the proposed design satisfy?", a: 2, b: 1 },
+      { text: "Which exception process applies if it diverges?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q5",
+    prompt: "A team says it needs a new enterprise capability. Where do you take the conversation?",
+    tipTitle: "Search the enterprise first",
+    tip: "Ask: “What provides this capability elsewhere in the organisation?”",
+    research: ["capability", "fixation"],
+    options: [
+      { text: "What provides this capability elsewhere in the organisation?", a: 3, b: 3 },
+      { text: "Which requirements define the capability we need?", a: 2, b: 1 },
+      { text: "What sourcing route best fits this capability?", a: 1, b: 1 },
+      { text: "Which team should own the new capability?", a: 2, b: 2 }
+    ]
+  },
+  {
+    id: "q6",
+    prompt: "Two teams disagree about an architectural decision and escalate it to you. What do you ask?",
+    tipTitle: "Diagnose the escalation",
+    tip: "Ask: “Which enterprise constraint can you not resolve yourselves?”",
+    research: ["advice", "adr"],
+    options: [
+      { text: "Which enterprise constraint can the teams not resolve?", a: 3, b: 3 },
+      { text: "Which option has the stronger delivery case?", a: 1, b: 1 },
+      { text: "Who currently owns the decision between them?", a: 2, b: 3 },
+      { text: "Which architecture forum should settle the disagreement?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q7",
+    prompt: "A proposal deliberately deviates from the target architecture. What matters most?",
+    tipTitle: "Make convergence explicit",
+    tip: "Ask: “What would bring us back to the target state?”",
+    research: ["adr", "hindsight"],
+    options: [
+      { text: "What business outcome requires this deviation?", a: 2, b: 2 },
+      { text: "What would bring us back to target state?", a: 3, b: 3 },
+      { text: "What risk does the exception introduce today?", a: 2, b: 2 },
+      { text: "Which governance route approves the exception?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q8",
+    prompt: "Three credible solution options are presented. What do you probe?",
+    tipTitle: "Challenge the option space",
+    tip: "Ask: “Which alternatives were ruled out before these options?”",
+    research: ["fixation", "premortem"],
+    options: [
+      { text: "Which option has the strongest overall business case?", a: 1, b: 1 },
+      { text: "What trade-off most clearly separates these options?", a: 2, b: 2 },
+      { text: "Which alternatives were ruled out before these options?", a: 3, b: 3 },
+      { text: "Which option does the delivery team recommend?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q9",
+    prompt: "A significant architectural decision has been made. What do you ask afterwards?",
+    tipTitle: "Record conditions, not just conclusions",
+    tip: "Ask: “What assumption should trigger a future review?”",
+    research: ["adr", "hindsight"],
+    options: [
+      { text: "Where is the rationale for this decision recorded?", a: 2, b: 2 },
+      { text: "What assumption should trigger a future review?", a: 3, b: 3 },
+      { text: "Which owner is accountable for implementing it?", a: 2, b: 2 },
+      { text: "Which approvals still need to be completed?", a: 1, b: 1 }
+    ]
+  },
+  {
+    id: "q10",
+    prompt: "A team asks you to choose between two credible options. What do you ask?",
+    tipTitle: "Advise without absorbing the decision",
+    tip: "Ask: “Which risk genuinely requires executive authority?”",
+    research: ["advice", "adr"],
+    options: [
+      { text: "Which option would you recommend and why?", a: 1, b: 1 },
+      { text: "What prevents you from making this decision?", a: 2, b: 3 },
+      { text: "Which risk genuinely requires executive authority?", a: 3, b: 3 },
+      { text: "Which experts have advised on the choice?", a: 2, b: 3 }
+    ]
+  }
+];
+
+const questionContainer = document.getElementById("questions");
+const form = document.getElementById("quizForm");
+const results = document.getElementById("results");
+const message = document.getElementById("message");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+function shuffle(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function renderQuestions() {
+  questionContainer.innerHTML = "";
+
+  questions.forEach((q, index) => {
+    const section = el("fieldset", "question");
+    section.dataset.questionId = q.id;
+
+    const legend = el("legend", "eyebrow", `Question ${index + 1} of ${questions.length}`);
+    section.appendChild(legend);
+    const heading = el("h2", null, q.prompt);
+    heading.id = `${q.id}-prompt`;
+    section.setAttribute("aria-labelledby", heading.id);
+    section.appendChild(heading);
+
+    shuffle(q.options).forEach(option => {
+      const label = el("label", "option");
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = q.id;
+      input.value = `${option.a}|${option.b}|${q.options.indexOf(option)}`;
+      input.addEventListener("change", updateProgress);
+      label.appendChild(input);
+      label.appendChild(el("span", null, option.text));
+      section.appendChild(label);
+    });
+
+    questionContainer.appendChild(section);
+  });
+}
+
+function answeredCount() {
+  return questions.filter(q => form.querySelector(`input[name="${q.id}"]:checked`)).length;
+}
+
+function updateProgress() {
+  const answered = answeredCount();
+  progressBar.style.width = `${(answered / questions.length) * 100}%`;
+  progressText.textContent = `${answered} of ${questions.length} answered`;
+  if (answered === questions.length) message.style.display = "none";
+}
+
+function dimensionCopy(score, dimension) {
+  if (dimension === "arch") {
+    if (score >= 80) return "You consistently pull discussions toward capability, target state, enterprise context and traceability.";
+    if (score >= 60) return "You often think architecturally, but some discussions still move too quickly into solutions, assurance or local optimisation.";
+    if (score >= 40) return "You recognise architectural context, but solution and delivery questions frequently arrive before capability and target-state questions.";
+    return "Your default questions tend to focus on the immediate proposal rather than the enterprise architecture surrounding it.";
+  }
+
+  if (score >= 80) return "Your questions strongly encourage evidence, challenge and appropriate decision ownership rather than passive assurance.";
+  if (score >= 60) return "You create useful challenge, but sometimes still accept assertions, approvals or escalations as substitutes for visible reasoning.";
+  if (score >= 40) return "You ask sensible review questions, but the organisation may still optimise for getting your approval rather than improving its reasoning.";
+  return "Your questions may unintentionally teach teams to bring you answers, approvals and escalations rather than stronger architectural reasoning.";
+}
+
+function overallProfile(overall, arch, beh) {
+  if (arch >= 75 && beh >= 75) return {
+    name: "Architecture Multiplier",
+    copy: "You do more than think architecturally yourself: your questions make architectural reasoning more likely to happen elsewhere before a proposal reaches you."
+  };
+  if (arch >= 75) return {
+    name: "Architectural Expert",
+    copy: "Your architectural instincts are strong, but some of the reasoning may still depend on you. The next step is turning your expertise into repeatable prompts others anticipate."
+  };
+  if (beh >= 75) return {
+    name: "Questioning Enabler",
+    copy: "You create healthy challenge and decision ownership. The opportunity is to make capability, target architecture and strategic traceability more explicit in those questions."
+  };
+  if (overall >= 60) return {
+    name: "Architecture-Aware Leader",
+    copy: "You regularly introduce architectural context, but teams can still reach you with solution-first or assurance-led framing. Consistency is the next lever."
+  };
+  return {
+    name: "Solution-Led Reviewer",
+    copy: "Your questions are credible and practical, but they may pull the conversation toward the presented solution, governance or delivery before the architecture is visible."
+  };
+}
+
+function calculateResults() {
+  let archRaw = 0;
+  let behRaw = 0;
+  const answerDiagnostics = [];
+
+  for (const q of questions) {
+    const selected = form.querySelector(`input[name="${q.id}"]:checked`);
+    if (!selected) return null;
+
+    const [a, b, optionIndex] = selected.value.split("|").map(Number);
+    archRaw += a;
+    behRaw += b;
+    answerDiagnostics.push({ q, a, b, optionIndex, total: a + b });
+  }
+
+  const maxPerDimension = questions.length * 3;
+  const arch = Math.round((archRaw / maxPerDimension) * 100);
+  const beh = Math.round((behRaw / maxPerDimension) * 100);
+  const overall = Math.round(arch * 0.60 + beh * 0.40);
+
+  return { arch, beh, overall, answerDiagnostics };
+}
+
+function showResults(data) {
+  const { arch, beh, overall, answerDiagnostics } = data;
+  const profile = overallProfile(overall, arch, beh);
+
+  document.getElementById("overallScore").textContent = overall;
+  document.getElementById("archScore").textContent = `${arch}/100`;
+  document.getElementById("behScore").textContent = `${beh}/100`;
+  document.getElementById("archBar").style.width = `${arch}%`;
+  document.getElementById("behBar").style.width = `${beh}%`;
+  document.getElementById("archCopy").textContent = dimensionCopy(arch, "arch");
+  document.getElementById("behCopy").textContent = dimensionCopy(beh, "beh");
+  document.getElementById("profileName").textContent = profile.name;
+  document.getElementById("profileCopy").textContent = profile.copy;
+
+  const weakest = [...answerDiagnostics].sort((x, y) => x.total - y.total).slice(0, 3);
+
+  const tips = document.getElementById("tips");
+  tips.innerHTML = "";
+  weakest.forEach(item => {
+    const card = el("div", "tile");
+    card.appendChild(el("strong", null, item.q.tipTitle));
+    card.appendChild(el("p", null, item.q.tip));
+    tips.appendChild(card);
+  });
+
+  const researchKeys = [];
+  weakest.forEach(item => {
+    item.q.research.forEach(key => {
+      if (!researchKeys.includes(key)) researchKeys.push(key);
+    });
+  });
+
+  // Always include Bakke when behavioural leverage is materially lower,
+  // and capability-based planning when architectural thinking is lower.
+  if (beh < 70 && !researchKeys.includes("advice")) researchKeys.push("advice");
+  if (arch < 70 && !researchKeys.includes("capability")) researchKeys.push("capability");
+
+  const research = document.getElementById("research");
+  research.innerHTML = "";
+  researchKeys.slice(0, 4).forEach(key => {
+    const r = researchLibrary[key];
+    const card = el("div", "tile");
+    card.appendChild(el("span", "tag", r.type));
+    card.appendChild(el("strong", null, r.title));
+    card.appendChild(el("p", null, r.body));
+    const link = el("a", null, `${r.label} ↗`);
+    link.href = r.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    card.appendChild(link);
+    research.appendChild(card);
+  });
+
+  results.style.display = "block";
+  results.scrollIntoView({ block: "start" });
+}
+
+form.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const data = calculateResults();
+  if (!data) {
+    message.style.display = "block";
+    results.style.display = "none";
+
+    const firstMissing = questions.find(q => !form.querySelector(`input[name="${q.id}"]:checked`));
+    if (firstMissing) {
+      const section = questionContainer.querySelector(`[data-question-id="${firstMissing.id}"]`);
+      section.scrollIntoView({ block: "center" });
+      section.querySelector("input").focus({ preventScroll: true });
+    }
+    return;
+  }
+
+  message.style.display = "none";
+  showResults(data);
+});
+
+document.getElementById("resetButton").addEventListener("click", () => {
+  form.reset();
+  results.style.display = "none";
+  message.style.display = "none";
+  renderQuestions();
+  updateProgress();
+  window.scrollTo({ top: 0 });
+});
+
+renderQuestions();
+</script>
+</body>
+</html>

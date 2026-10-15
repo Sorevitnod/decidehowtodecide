@@ -1,0 +1,9 @@
+{
+  "name": "decision-helpers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static decision-helper pages for decidehowtodecide.org (no runtime dependencies).",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  }
+}

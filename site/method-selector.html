@@ -7,20 +7,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
 <style>
-  :root{
-    --ink:#151E27;--slate:#2C3A47;--paper:#EEF1F4;--panel:#FFFFFF;
-    --line:#D9DFE6;--line-soft:#E7EBF0;--muted:#67737F;--muted-2:#94A0AB;
-    --clay:#B26A3C;--green:#177268;--amber:#C0862B;--avoid:#9B4B48;
-    --fit-bg:#E7F1EF;--partial-bg:#F6EDDA;--avoid-bg:#F3E5E4;
-    --shadow:0 1px 2px rgba(21,30,39,.05),0 8px 28px rgba(21,30,39,.07);
-    --radius:14px;
-  }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
   body{font-family:"IBM Plex Sans",system-ui,sans-serif;background:var(--paper);color:var(--ink);
     line-height:1.5;padding:clamp(16px,3vw,40px);-webkit-font-smoothing:antialiased}
   .wrap{max-width:1180px;margin:0 auto}
+
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    text-decoration:none;margin-bottom:18px;transition:color .15s ease}
+  .backlink:hover{color:var(--ink)}
+  .backlink:focus-visible{outline:2px solid var(--slate);outline-offset:3px}
+  .backlink span{font-size:14px;line-height:0}
 
   header{margin-bottom:22px}
   .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
@@ -153,6 +153,7 @@
 </head>
 <body>
 <div class="wrap">
+  <a class="backlink" href="./"><span>&larr;</span> Decision helpers</a>
   <header>
     <div class="eyebrow">Organisational decision-making</div>
     <h1>Which decision method fits this decision?</h1>
